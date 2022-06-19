@@ -1,0 +1,27 @@
+{
+  "emails": [
+    {
+      "value": "yherziger@microsoft.com",
+      "type": "true",
+      "primary": true
+    }
+  ],
+  "external_id": "1474acf4-4bba-44b8-8584-1432180b8516",
+  "locale": "en-US",
+  "name": {
+    "formatted": "Yuval Herziger",
+    "family_name": "Herziger",
+    "given_name": "Yuval"
+  },
+  "groups": [
+    {}
+  ],
+  "password": "supersecret",
+  "schemas": [
+    "urn:ietf:params:scim:schemas:core:2.0:User"
+  ],
+  "id": "1474acf4-4bba-44b8-8584-1432180b8516",
+  "username": "yherziger@microsoft.com",
+  "active": true,
+  "display_name": "Yuval Herziger"
+}
