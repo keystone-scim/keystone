@@ -1,0 +1,16 @@
+name: Build Container Image
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened ]
+env:
+  IMAGE_NAME: azure-ad-scim-2-api
+  IMAGE_TAG: main
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: make build-image
