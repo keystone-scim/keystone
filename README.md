@@ -1,5 +1,8 @@
 # Azure AD SCIM 2.0 API
 
+![Build](https://github.com/yuvalherziger/azure-ad-scim-2-api/actions/workflows/build.yaml/badge.svg?branch=main)
+![Tests](https://github.com/yuvalherziger/azure-ad-scim-2-api/actions/workflows/tests.yaml/badge.svg?branch=main)
+
 A containerized, Python-based [SCIM 2.0 API](https://datatracker.ietf.org/doc/html/rfc7644) implementation in asynchronous
 Python 3.9, using [asyncio](https://docs.python.org/3/library/asyncio.html)
 and [aiohttp](https://docs.aiohttp.org/en/stable/).
