@@ -22,15 +22,20 @@ in any type of store.
 
 ## Build the Image
 
-TBA.
+Requirements:
 
-## Push the Image to ACR
+* **A WSL2/MacOS/Linux shell**: You'll need a Linux shell to build and run the container locally.
+  A standard Linux/Unix shell includes GNU Make, which is required in order to use the shortcut commands
+  in this project's Makefile.
+* **Docker**: You'll need a Docker daemon such as the one included with
+  [Docker Desktop](https://www.docker.com/products/docker-desktop/). This is required to build the container
+  image locally.
 
-You can automate the publishing of the container image to an
-[Azure Container Registry (ACR)](https://azure.microsoft.com/en-us/services/container-registry/) using Terraform or
-another IaC of your choice.
+To build the image, run the following command:
 
-Instructions TBA.
+```shell
+make build-image
+```
 
 ## Configure the API
 

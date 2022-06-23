@@ -7,6 +7,7 @@ POETRY_BIN := poetry
 IMAGE_NAME := azure-ad-scim-2-api
 IMAGE_TAG := latest
 AZ_CLI_BIN := az
+PORT := 5001
 
 .PHONY: build-image
 build-image:
@@ -21,3 +22,9 @@ unit-tests:
 version:
 	echo $(VERSION)
 
+.PHONY: docker-run-dev
+docker-run-dev:
+	 $(DOCKER_BIN) run \
+	 --rm -it --name $(IMAGE_NAME)-dev -p $(PORT):$(PORT) \
+	 --mount type=bind,source="$(shell pwd)"/config/dev.yaml,target=/tmp/config.yaml \
+	 --env CONFIG_PATH=/tmp/config.yaml $(IMAGE_NAME):$(IMAGE_TAG)
