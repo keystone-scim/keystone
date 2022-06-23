@@ -19,6 +19,7 @@ user_routes = web.RouteTableDef()
 # user_store = get_user_store()
 user_store = Stores().get("users")
 
+
 @user_routes.view("/Users/{user_id}")
 class UserView(web.View):
 

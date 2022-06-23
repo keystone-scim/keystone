@@ -8,7 +8,6 @@ from azure_ad_scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists
 
 class MemoryStore(BaseStore):
     resource_db: Dict[str, Dict] = {}
-    sensitive_fields = ["password"]
 
     filter_map = {
         "eq": lambda a, b: str(a).lower().__eq__(str(b).lower()),
@@ -23,13 +22,8 @@ class MemoryStore(BaseStore):
     }
 
     async def search(self, **kwargs: Dict) -> List[Dict]:
+        # TODO: implement
         pass
-
-    async def _sanitize(self, resource: Dict) -> Dict:
-        for sf in self.sensitive_fields:
-            if sf in resource:
-                del resource[sf]
-        return resource
 
     async def update(self, resource_id: str, **kwargs: Dict) -> Dict:
         if resource_id not in self.resource_db:
@@ -63,20 +57,3 @@ class MemoryStore(BaseStore):
 
     async def parse_filter(self, expr: str) -> Dict:
         return {}
-
-    async def parse_operation(self, operation: str) -> Dict:
-        pattern = re.compile("(\w+)\s+(.*)\s+'(.*)'")
-        match = pattern.match(operation)
-        try:
-            attribute = match.group(1)
-            operator = match.group(2).lower()
-            predicate = match.group(3)
-        except Exception as e:
-            raise ValueError("Could not parse operation")
-        if operator not in self.filter_map:
-            raise ValueError(f"Invalid operator: {operator}")
-        return {
-            "func": self.filter_map[operator],
-            "attr": attribute,
-            "pred": predicate,
-        }

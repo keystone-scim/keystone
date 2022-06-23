@@ -39,5 +39,6 @@ __all__ = [
     "ErrorResponse",
     "ListQueryParams",
     "ListResponse",
+    "DEFAULT_ERROR_SCHEMA",
     "DEFAULT_PATCH_OP_SCHEMA",
 ]

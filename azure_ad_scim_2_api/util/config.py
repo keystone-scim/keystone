@@ -15,6 +15,15 @@ SCHEMA = Schema({
         Optional("client_id"): str,
         Optional("client_secret"): str,
     }),
+    Optional("authentication", default={}): Schema({
+        Optional("azure_key_vault", default={}): Schema({
+            Optional("vault_name"): str,
+            Optional("secret_name", default="scim-2-api-token"): str,
+            Optional("create_secret_if_not_present", default=True): bool,
+            Optional("credentials_client", default="default"): str,
+        }),
+        Optional("secret"): str,
+    }),
     Optional("provisioning", default={}): Schema({
         Optional("groups", default=True): bool,
         Optional("users_as_guests", default=False): bool,

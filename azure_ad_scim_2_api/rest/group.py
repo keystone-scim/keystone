@@ -5,7 +5,6 @@ from aiohttp import web
 from aiohttp_apispec import (
     docs,
     request_schema,
-    response_schema,
     querystring_schema,
 )
 
@@ -17,7 +16,7 @@ from azure_ad_scim_2_api.util.store_util import Stores
 LOGGER = logging.getLogger(__name__)
 group_routes = web.RouteTableDef()
 
-user_store = Stores().get("groups")
+group_store = Stores().get("groups")
 
 
 @group_routes.view("/Groups/{group_id}")

@@ -1,5 +1,0 @@
-store:
-  type: InMemory
-provisioning:
-  groups: true
-  users_as_guests: false

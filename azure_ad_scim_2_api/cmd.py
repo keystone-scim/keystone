@@ -27,7 +27,8 @@ from azure_ad_scim_2_api import VERSION
 from azure_ad_scim_2_api.rest.user import user_routes
 from azure_ad_scim_2_api.rest.group import group_routes
 from azure_ad_scim_2_api.models import DEFAULT_ERROR_SCHEMA
-from azure_ad_scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists
+from azure_ad_scim_2_api.security.az_keyvault_client import bearer_token_check
+from azure_ad_scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists, UnauthorizedRequest
 
 
 async def health(_: web.Request):
@@ -38,16 +39,24 @@ async def serve(host: str = "0.0.0.0", port: int = 5001):
     catcher = Catcher(code="status", envelope="detail")
     err_schemas = {"schemas": [DEFAULT_ERROR_SCHEMA]}
     await catcher.add_scenarios(*[sc.with_additional_fields(err_schemas) for sc in canned.AIOHTTP_SCENARIOS])
-    await catcher.add_scenario(
-        catch(ResourceNotFound).with_status_code(404).and_stringify().with_additional_fields(err_schemas)
+    await catcher.add_scenarios(
+        catch(ResourceNotFound).with_status_code(404).and_stringify().with_additional_fields(err_schemas),
+        catch(ResourceAlreadyExists).with_status_code(409).and_stringify().with_additional_fields(err_schemas),
+        catch(UnauthorizedRequest).with_status_code(401).and_return("Unauthorized request").with_additional_fields(err_schemas)
     )
-    await catcher.add_scenario(
-        catch(ResourceAlreadyExists).with_status_code(409).and_stringify().with_additional_fields(err_schemas)
-    )
+
+    # Create a sub-app for the SCIM 2.0 API to handle authentication separately from docs:
+    scim_api = web.Application()
+    scim_api.middlewares.append(catcher.middleware)
+    scim_api.middlewares.append(bearer_token_check)
+    scim_api.add_routes(user_routes)
+    scim_api.add_routes(group_routes)
+
+    # Append SCIM 2.0 API to root web app:
     app = web.Application()
-    app.middlewares.append(catcher.middleware)
-    app.add_routes(user_routes)
-    app.add_routes(group_routes)
+    app.add_subapp("/scim", scim_api)
+
+    # Register OpenAPI docs (swagger):
     _ = AiohttpApiSpec(
         app=app,
         title="SCIM 2.0 API Documentation",
