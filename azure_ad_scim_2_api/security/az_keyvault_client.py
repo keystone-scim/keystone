@@ -27,7 +27,6 @@ class SCIMTokenClient(metaclass=ThreadSafeSingleton):
 
     @staticmethod
     def get_secret_client():
-        print("Still here?")
         key_vault_name = CONFIG.get("authentication.azure_key_vault.vault_name")
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
         credentials_client_type = CONFIG.get("authentication.azure_key_vault.credentials_client")
