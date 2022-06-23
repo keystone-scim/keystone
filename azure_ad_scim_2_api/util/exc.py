@@ -18,8 +18,5 @@ class ResourceAlreadyExists(Exception):
         return f"{self.resource_type} {self.resource_id} already exists in the target SCIM tenant"
 
 
-
-
-
-
-
+class UnauthorizedRequest(Exception):
+    pass
