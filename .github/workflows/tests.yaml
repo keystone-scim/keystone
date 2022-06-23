@@ -5,7 +5,7 @@ on:
   pull_request:
     types: [ opened ]
 env:
-  CONFIG_PATH: /config/tests.yaml
+  CONFIG_PATH: "./config/tests.yaml"
 jobs:
   ci:
     strategy:
