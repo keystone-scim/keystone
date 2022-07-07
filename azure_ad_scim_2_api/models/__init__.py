@@ -11,25 +11,25 @@ class BaseResource(Schema):
 
 
 class ListQueryParams(Schema):
-    start_index = fields.Str(attribute="startIndex", default="1")
-    count = fields.Str(attribute="itemsPerPage", default="100")
+    start_index = fields.Str(attribute="startIndex", dump_default="1")
+    count = fields.Str(attribute="itemsPerPage", dump_default="100")
     filter = fields.Str()
 
 
 class ListResponse(Schema):
-    schemas = fields.List(fields.Str, default=[DEFAULT_LIST_SCHEMA])
+    schemas = fields.List(fields.Str, dump_default=[DEFAULT_LIST_SCHEMA])
     total_results = fields.Int(attribute="totalResults", required=True)
     start_index = fields.Int(attribute="startIndex", required=True)
     items_per_page = fields.Int(attribute="itemsPerPage", required=True)
     resources = fields.List(
         fields.Nested(BaseResource),
         attribute="Resources",
-        default=[]
+        dump_default=[]
     )
 
 
 class ErrorResponse(Schema):
-    schemas = fields.List(fields.Str, default=[DEFAULT_ERROR_SCHEMA])
+    schemas = fields.List(fields.Str, dump_default=[DEFAULT_ERROR_SCHEMA])
     detail = fields.Str(required=True)
     status = fields.Int(required=True)
 
