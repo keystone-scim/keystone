@@ -21,7 +21,7 @@
     "urn:ietf:params:scim:schemas:core:2.0:User"
   ],
   "id": "1474acf4-4bba-44b8-8584-1432180b8516",
-  "username": "yherziger@microsoft.com",
+  "userName": "yherziger@microsoft.com",
   "active": true,
-  "display_name": "Yuval Herziger"
+  "displayName": "Yuval Herziger"
 }

@@ -16,11 +16,11 @@ build-image:
 .PHONY: unit-tests
 unit-tests: export CONFIG_PATH=./config/tests.yaml
 unit-tests:
-	$(POETRY_BIN) run pytest tests --asyncio-mode=strict
+	$(POETRY_BIN) run pytest tests --verbose --cov=azure_ad_scim_2_api --asyncio-mode=strict
 
-.PHONY: version
-version:
-	echo $(VERSION)
+.PHONY: security-tests
+security-tests:
+	$(POETRY_BIN) run bandit -r ./azure_ad_scim_2_api
 
 .PHONY: docker-run-dev
 docker-run-dev:

@@ -21,11 +21,11 @@ class BaseStore:
     async def delete(self, resource_id: str):
         raise NotImplementedError("Method 'delete' not implemented")
 
-    async def parse_filter(self, expr: str):
+    async def parse_filter_expression(self, expr: str):
         raise NotImplementedError("Method 'parse_filter' not implemented")
 
     async def parse_operation(self, operation: str) -> Dict:
-        pattern = re.compile("(\\w+)\\s+(.*)\\s+'(.*)'")
+        pattern = re.compile("(\\w+)\\s+(.*)\\s+\"(.*)\"")
         match = pattern.match(operation)
         try:
             attribute = match.group(1)

@@ -41,16 +41,16 @@ class Config(metaclass=ThreadSafeSingleton):
             config_file = os.environ.get("CONFIG_PATH", "config.yaml")
         path = os.path.normpath(config_file)
 
-        LOGGER.debug("Loading config from file: %s", path)
+        LOGGER.debug("Attempting to load config from file: %s", path)
         try:
             with open(path, "r", encoding="utf-8") as config:
                 data = yaml.safe_load(config.read())
+            self.data = self.schema.validate(data)
+            LOGGER.debug("Loaded config data: %s", self.data)
         except FileNotFoundError:
-            LOGGER.exception("Config file not found")
-            raise
-
-        self.data = self.schema.validate(data)
-        LOGGER.debug("Loaded config data: %s", self.data)
+            LOGGER.warning("Config file not found: %s. This means that all "
+                           "configuration keys are expected to be found in environment variables.", path)
+            self.data = {}
 
     def get(self, key, default_value=None):
         """

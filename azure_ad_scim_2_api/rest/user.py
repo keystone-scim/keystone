@@ -5,18 +5,16 @@ from aiohttp import web
 from aiohttp_apispec import (
     docs,
     request_schema,
-    response_schema,
     querystring_schema,
 )
 
-from azure_ad_scim_2_api.models import ListQueryParams, ErrorResponse
+from azure_ad_scim_2_api.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
 from azure_ad_scim_2_api.models.user import User, ListUsersResponse
 from azure_ad_scim_2_api.util.store_util import Stores
 
 LOGGER = logging.getLogger(__name__)
 user_routes = web.RouteTableDef()
 
-# user_store = get_user_store()
 user_store = Stores().get("users")
 
 
@@ -98,7 +96,20 @@ class UsersView(web.View):
     @request_schema(User, strict=True)
     @querystring_schema(ListQueryParams)
     async def get(self) -> web.Response:
-        pass
+        start_index = int(self.request.query.get("startIndex", "1"))
+        items_per_page = int(self.request.query.get("itemsPerPage", "100"))
+        users, total_results = await user_store.search(
+            _filter=self.request.query.get("filter"),
+            start_index=start_index,
+            count=items_per_page,
+        )
+        return web.json_response({
+            "schemas": [DEFAULT_LIST_SCHEMA],
+            "startIndex": start_index,
+            "totalResults": total_results,
+            "itemsPerPage": items_per_page,
+            "Resources": users,
+        })
 
     @docs(
         tags=["Users"],

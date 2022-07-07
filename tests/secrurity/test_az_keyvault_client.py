@@ -25,7 +25,6 @@ class TestSCIMTokenClient:
                 return
 
         def get_secret_client():
-            print("Actually here")
             return MockSecretClient()
 
         monkeypatch.setattr(SCIMTokenClient, "get_secret_client", get_secret_client)
@@ -47,7 +46,6 @@ class TestSCIMTokenClient:
                 return MockSecretValue
 
         def get_secret_client():
-            print("Actually here")
             return MockSecretClient()
 
         monkeypatch.setattr(SCIMTokenClient, "get_secret_client", get_secret_client)
