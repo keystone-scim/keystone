@@ -27,9 +27,25 @@ def init_stores():
     store_impl: BaseStore
     if store_type == "AzureAD":
         # TODO: implement AAD store & initialize.
-        stores = Stores(users=MemoryStore(), groups=MemoryStore())
+        stores = Stores(
+            users=MemoryStore("User"),
+            groups=MemoryStore(
+                "Group",
+                name_uniqueness=True,
+                resources=None,
+                nested_store_attr="members"
+            )
+        )
     elif store_type == "InMemory":
-        stores = Stores(users=MemoryStore(), groups=MemoryStore())
+        stores = Stores(
+            users=MemoryStore("User"),
+            groups=MemoryStore(
+                "Group",
+                name_uniqueness=True,
+                resources=None,
+                nested_store_attr="members"
+            )
+        )
     else:
         raise ValueError(f"Invalid store type: '{store_type}'")
     LOGGER.debug("Using '%s' store for users and groups", store_type)

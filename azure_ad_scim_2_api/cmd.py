@@ -21,19 +21,20 @@ init_stores()
 import asyncio
 from aiohttp import web
 from aiohttp_apispec import AiohttpApiSpec
-from aiohttp_catcher import catch, Catcher, canned
 
 from azure_ad_scim_2_api import VERSION
 from azure_ad_scim_2_api.rest import get_error_handling_mw
-from azure_ad_scim_2_api.rest.user import user_routes
-from azure_ad_scim_2_api.rest.group import group_routes
-from azure_ad_scim_2_api.models import DEFAULT_ERROR_SCHEMA
+from azure_ad_scim_2_api.rest.user import get_user_routes
+from azure_ad_scim_2_api.rest.group import get_group_routes
 from azure_ad_scim_2_api.security.az_keyvault_client import bearer_token_check
-from azure_ad_scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists, UnauthorizedRequest
 
 
 async def health(_: web.Request):
     return web.json_response({"healthy": True})
+
+
+async def root(_: web.Request):
+    return web.HTTPFound("/api/docs")
 
 
 async def serve(host: str = "0.0.0.0", port: int = 5001):
@@ -43,13 +44,12 @@ async def serve(host: str = "0.0.0.0", port: int = 5001):
     scim_api = web.Application()
     scim_api.middlewares.append(error_handling_mw)
     scim_api.middlewares.append(bearer_token_check)
-    scim_api.add_routes(user_routes)
-    scim_api.add_routes(group_routes)
+    scim_api.add_routes(get_user_routes())
+    scim_api.add_routes(get_group_routes())
 
     # Append SCIM 2.0 API to root web app:
     app = web.Application()
     app.add_subapp("/scim", scim_api)
-
     # Register OpenAPI docs (swagger):
     _ = AiohttpApiSpec(
         app=app,
@@ -59,6 +59,7 @@ async def serve(host: str = "0.0.0.0", port: int = 5001):
         swagger_path="/api/docs"
     )
     # Health/readiness probe endpoint:
+    app.add_routes([web.get("/", root)])
     app.add_routes([web.get("/health", health)])
 
     runner = web.AppRunner(app)

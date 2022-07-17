@@ -28,3 +28,8 @@ docker-run-dev:
 	 --rm -it --name $(IMAGE_NAME)-dev -p $(PORT):$(PORT) \
 	 --mount type=bind,source="$(shell pwd)"/config/dev.yaml,target=/tmp/config.yaml \
 	 --env CONFIG_PATH=/tmp/config.yaml $(IMAGE_NAME):$(IMAGE_TAG)
+
+.PHONY: build-on-mac
+build-on-mac:
+	$(DOCKER_BIN) buildx build --platform linux/amd64 \
+	-t $(IMAGE_NAME):$(IMAGE_TAG) .

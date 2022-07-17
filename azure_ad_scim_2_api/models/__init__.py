@@ -12,7 +12,7 @@ class BaseResource(Schema):
 
 class ListQueryParams(Schema):
     start_index = fields.Str(attribute="startIndex", dump_default="1")
-    count = fields.Str(attribute="itemsPerPage", dump_default="100")
+    count = fields.Str(attribute="count", dump_default="100")
     filter = fields.Str()
 
 
@@ -34,11 +34,17 @@ class ErrorResponse(Schema):
     status = fields.Int(required=True)
 
 
+class AuthHeaders(Schema):
+    authorization = fields.Str(attribute="Authorization", required=True)
+
+
 __all__ = [
+    "AuthHeaders",
     "BaseResource",
     "ErrorResponse",
     "ListQueryParams",
     "ListResponse",
     "DEFAULT_ERROR_SCHEMA",
+    "DEFAULT_LIST_SCHEMA",
     "DEFAULT_PATCH_OP_SCHEMA",
 ]

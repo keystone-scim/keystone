@@ -14,7 +14,7 @@ class OperationValue(Schema):
 
 
 class Operation(Schema):
-    op = fields.Str(validate=validate.OneOf(["add", "remove"]))
+    op = fields.Str(validate=validate.OneOf(["add", "remove", "replace"]))
     value = fields.Nested(OperationValue)
     path = fields.Str()
 

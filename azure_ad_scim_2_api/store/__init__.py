@@ -6,7 +6,7 @@ class BaseStore:
     filter_map = {}
     sensitive_fields = ["password"]
 
-    async def get_by_id(self, resource_id: str):
+    async def get_by_id(self, resource_id: str, with_nested_store: bool = False):
         raise NotImplementedError("Method 'get_by_id' not implemented")
 
     async def search(self, **kwargs: Dict):
@@ -42,7 +42,8 @@ class BaseStore:
         }
 
     async def _sanitize(self, resource: Dict) -> Dict:
+        s_resource = {**resource}
         for sf in self.sensitive_fields:
-            if sf in resource:
-                del resource[sf]
-        return resource
+            if sf in s_resource:
+                del s_resource[sf]
+        return s_resource
