@@ -1,3 +1,4 @@
+from urllib.parse import quote
 import asyncio
 import random
 
@@ -222,7 +223,7 @@ class TestGroupRest:
         ])
         assert 201 * len(groups) == sum([r.status for r in responses])
         random_group = random.choice(groups)
-        group_name = random_group.get("displayName")
+        group_name = quote(random_group.get("displayName"))
         fltr = f"displayName eq \"{group_name}\""
         search_url = f"/scim/Groups?filter={fltr}&count=1"
         resp = await scim_api.get(search_url, headers=headers)
