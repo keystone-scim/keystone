@@ -49,25 +49,66 @@ def users(n: int = 5):
 
 
 @pytest.fixture
+def groups():
+    return [
+        {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "Research & Development",
+            "members": []
+        },
+        {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "Customer Success",
+            "members": []
+        },
+        {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "Finance",
+            "members": []
+        },
+        {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "Human Resources",
+            "members": []
+        },
+        {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "Information Technology",
+            "members": []
+        }
+    ]
+
+
+@pytest.fixture
+def single_group(groups):
+    return random.choice(groups)
+
+
+@pytest.fixture
 def single_user(users):
     return random.choice(users)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def memory_store():
     store = MemoryStore()
     yield store
     store.resource_db = {}
 
 
-@pytest.fixture()
+@pytest.fixture
 def scim_api(aiohttp_client, event_loop, cfg):
     from azure_ad_scim_2_api.rest import get_error_handling_mw
-    from azure_ad_scim_2_api.rest.group import group_routes
-    from azure_ad_scim_2_api.rest.user import user_routes
+    from azure_ad_scim_2_api.rest.group import get_group_routes
+    from azure_ad_scim_2_api.rest.user import get_user_routes
     scim_api = web.Application()
-    scim_api.add_routes(user_routes)
-    scim_api.add_routes(group_routes)
+    scim_api.add_routes(get_user_routes(MemoryStore("User")))
+    scim_api.add_routes(get_group_routes(MemoryStore(
+        "Group",
+        name_uniqueness=True,
+        resources=None,
+        nested_store_attr="members"
+    )))
     app = web.Application()
     app.add_subapp("/scim", scim_api)
     ehmw = event_loop.run_until_complete(get_error_handling_mw())

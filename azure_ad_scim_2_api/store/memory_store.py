@@ -1,6 +1,8 @@
+import sys
 import uuid
 from typing import Dict, List
 
+import asyncio
 from scim2_filter_parser import ast
 from scim2_filter_parser.ast import LogExpr, Filter, AttrExpr, CompValue, AttrPath, AST
 from scim2_filter_parser.parser import SCIMParser
@@ -48,10 +50,6 @@ def ew_in_list(lst: List, predicate: str, attr: str = "value"):
 
 class MemoryStore(BaseStore):
     resource_db: Dict = {}
-    iterable_attributes = ["emails", "groups"]
-
-    def __init__(self):
-        self.resource_db = {}
 
     filter_map = {
         "eq": lambda a, b: str(a).lower().__eq__(str(b).lower()),
@@ -71,48 +69,104 @@ class MemoryStore(BaseStore):
         "ew_lst": ew_in_list,
     }
 
+    def __init__(self,
+                 resource_name: str = "User",
+                 name_uniqueness: bool = False,
+                 resources: List = None,
+                 nested_store_attr: str = None,
+                 key_attr: str = "id"
+                 ):
+        self.resource_name = resource_name
+        self.name_uniqueness = name_uniqueness
+        self.nested_store_attr = nested_store_attr
+        self.key_attr = key_attr
+        self.data_lock = asyncio.Lock()
+        self.resource_db = self._index_resources(resources or [])
+
+    def _index_resources(self, resources: List) -> Dict:
+        return {r.get(self.key_attr): r for r in resources}
+
+    async def prep_resource_for_presentation(self, resource: Dict) -> Dict:
+        if not self.nested_store_attr:
+            return resource
+        nested_store = resource[f"{self.nested_store_attr}_store"]
+        nested_members, _ = await nested_store.search(
+            _filter=None,
+            start_index=1,
+            count=sys.maxsize
+        )
+        resource_sc = {
+            **resource,
+            self.nested_store_attr: nested_members,
+        }
+        del resource_sc[f"{self.nested_store_attr}_store"]
+        return resource_sc
+
     async def search(self, _filter: str, start_index: int = 1, count: int = 100) -> tuple[list[Dict], int]:
-        if not _filter:
-            res = list(self.resource_db.values())
-        else:
-            pf = await self.parse_filter_expression(_filter)
-            res = [
-                r for r in self.resource_db.values()
-                if await self.evaluate_filter(pf, await CaseInsensitiveDict.build_deep(r))
-            ]
-        total_results = len(res)
+        async with self.data_lock:
+            if not _filter:
+                res = await asyncio.gather(*[
+                    self.prep_resource_for_presentation(r)
+                    for r in list(self.resource_db.values())
+                ])
+            else:
+                pf = await self.parse_filter_expression(_filter)
+                res = await asyncio.gather(*[
+                    self.prep_resource_for_presentation(r) for r in self.resource_db.values()
+                    if await self.evaluate_filter(pf, await CaseInsensitiveDict.build_deep(r))
+                ])
+            total_results = len(res)
         paginated = res[start_index - 1: start_index - 1 + count:]
         return paginated, total_results
 
     async def update(self, resource_id: str, **kwargs: Dict) -> Dict:
-        if resource_id not in self.resource_db:
-            raise ResourceNotFound("User", resource_id)
-
-        resource = self.resource_db.get(resource_id)
-        resource.update(await self._sanitize(kwargs))
-        self.resource_db[resource_id] = resource
-        return resource
+        async with self.data_lock:
+            if resource_id not in self.resource_db:
+                raise ResourceNotFound(self.resource_name, resource_id)
+            resource = self.resource_db.get(resource_id)
+            resource.update(await self._sanitize(kwargs))
+            if self.nested_store_attr and kwargs.get(self.nested_store_attr):
+                resource[f"{self.nested_store_attr}_store"] = MemoryStore(
+                    "Member",
+                    resources=resource.get(self.nested_store_attr),
+                    key_attr="value"
+                )
+            self.resource_db[resource_id] = resource
+        return await self.prep_resource_for_presentation(resource)
 
     async def create(self, resource: Dict) -> Dict:
-        resource_id = resource.get("id")
-        if resource_id and resource_id in self.resource_db:
-            raise ResourceAlreadyExists("User", resource_id)
-        resource_id = resource_id or str(uuid.uuid4())
-        resource["id"] = resource_id
-        self.resource_db[resource_id] = await self._sanitize(resource)
-        return resource
+        resource_id = resource.get(self.key_attr)
+        async with self.data_lock:
+            if resource_id and resource_id in self.resource_db:
+                raise ResourceAlreadyExists(self.resource_name, resource_id)
+            if self.name_uniqueness:
+                if resource.get("displayName") in [r.get("displayName") for r in self.resource_db.values()]:
+                    raise ResourceAlreadyExists(self.resource_name, resource_id)
+            if self.nested_store_attr:
+                resource[f"{self.nested_store_attr}_store"] = MemoryStore(
+                    "Member",
+                    resources=resource.get(self.nested_store_attr),
+                    key_attr="value"
+                )
+            resource_id = resource_id or str(uuid.uuid4())
+            resource[self.key_attr] = resource_id
+            self.resource_db[resource_id] = await self._sanitize(resource)
+        return await self.prep_resource_for_presentation(resource)
 
     async def delete(self, resource_id: str) -> None:
-        if resource_id not in self.resource_db:
-            raise ResourceNotFound("User", resource_id)
-        del self.resource_db[resource_id]
+        async with self.data_lock:
+            if resource_id not in self.resource_db:
+                raise ResourceNotFound(self.resource_name, resource_id)
+            del self.resource_db[resource_id]
         return
 
     async def get_by_id(self, resource_id: str) -> Dict:
-        if resource_id not in self.resource_db:
-            raise ResourceNotFound("User", resource_id)
-
-        return await self._sanitize(self.resource_db.get(resource_id))
+        async with self.data_lock:
+            if resource_id not in self.resource_db:
+                raise ResourceNotFound(self.resource_name, resource_id)
+            return await self.prep_resource_for_presentation(
+                await self._sanitize(self.resource_db.get(resource_id))
+            )
 
     async def parse_filter_expression(self, expr: str) -> Dict:
         token_stream = SCIMLexer().tokenize(expr)
@@ -126,13 +180,13 @@ class MemoryStore(BaseStore):
         expr = parsed_filter.get("expr")
         f = expr.get("func")
         if f:
-            f = expr["func"]
-            pred = expr["pred"]
-            attr = expr["attr"].lower()
-            op = expr["op"].lower()
-            attr_parts = attr.split(".")
+            f = expr["func"]  # eq()
+            pred = expr["pred"]  # "f1aa2630-6343-41fa-bae4-384a46bc2ed3"
+            attr = expr["attr"].lower()  # "value"
+            op = expr["op"].lower()  # "eq"
+            attr_parts = attr.split(".")  # ["value"]
             node_attr_value = node
-            namespace = expr.get("namespace")
+            namespace = expr.get("namespace")  # "members"
             if namespace:
                 f = self.filter_map[f"{op}_lst"]
                 lst = node.get(namespace)

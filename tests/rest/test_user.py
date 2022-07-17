@@ -118,10 +118,9 @@ class TestUserRest:
         assert 201 * len(users) == sum([r.status for r in responses])
         random_user = random.choice(users)
         email_parts = random_user.get("userName").split("@")
-        email_prefix = email_parts[0]
         domain = email_parts[1]
         fltr = f"userName co \"{domain}\""
-        search_url = f"/scim/Users?filter={fltr}&itemsPerPage=1"
+        search_url = f"/scim/Users?filter={fltr}&count=1"
         resp = await scim_api.get(search_url, headers=headers)
         assert resp.status == 200
         assert len((await resp.json())["Resources"]) == 1
