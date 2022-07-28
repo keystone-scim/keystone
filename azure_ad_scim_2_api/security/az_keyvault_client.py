@@ -27,9 +27,9 @@ class SCIMTokenClient(metaclass=ThreadSafeSingleton):
 
     @staticmethod
     def get_secret_client():
-        key_vault_name = CONFIG.get("authentication.azure_key_vault.vault_name")
+        key_vault_name = CONFIG.get("authentication.akv.vault_name")
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
-        credentials_client_type = CONFIG.get("authentication.azure_key_vault.credentials_client")
+        credentials_client_type = CONFIG.get("authentication.akv.credentials_client")
         if credentials_client_type == "cli":
             credential = AzureCliCredential()
         else:
@@ -42,13 +42,13 @@ class SCIMTokenClient(metaclass=ThreadSafeSingleton):
             return secret_from_config
 
         secret_client = SCIMTokenClient.get_secret_client()
-        secret_name = CONFIG.get("authentication.azure_key_vault.secret_name")
+        secret_name = CONFIG.get("authentication.akv.secret_name")
         try:
             secret: KeyVaultSecret = secret_client.get_secret(name=secret_name)
             LOGGER.info("SCIM 2.0 API token retrieved from Azure Key Vault")
         except ResourceNotFoundError:
-            create_secret_if_not_present = CONFIG.get("authentication.azure_key_vault.create_secret_if_not_present")
-            if create_secret_if_not_present:
+            force_create = CONFIG.get("authentication.akv.force_create")
+            if force_create:
                 secret_value = str(uuid.uuid4())
                 secret: KeyVaultSecret = secret_client.set_secret(secret_name, secret_value)
                 LOGGER.info("A new SCIM 2.0 API token was created with the following value: %s", secret_value)

@@ -21,11 +21,12 @@ Currently, the API implements the following stores:
   [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction) container for users and groups.
 * **In-memory Store**: This store implementation reads and writes to an in-memory store.
   Given its ephemeral nature, the in-memory store is meant to be used _strictly_ for development purposes.
+  Inherently, the in-memory store shouldn't and cannot be used in a replicated deployment, since
+  each node running the container will have its own store.
 
 **Table of Contents:**
 
 - [Build the Image](#build-the-image)
-- [Push the Image to ACR](#push-the-image-to-acr)
 - [Configure the API](#configure-the-api)
 - [Deploy the API](#deploy-the-api)
 - [Development](#development)
@@ -52,27 +53,47 @@ make build-image
 
 ## Configure the API
 
-**Please note:** All configuration keys can be represented by an environment variable by
-the capitalizing the entire key name and replacing the nesting dot (`.`) annotation with
-an underscore (`_`). For example, `store.client_secret` can be populated with the
-`STORE_CLIENT_ID` environment variable in the container the API is running in.
+You can configure the API in two ways, whilst both can be used in conjunction with one another:
 
-| **Key**                                                              | **Description**                                                                      | **Default Value**      |
-|----------------------------------------------------------------------|--------------------------------------------------------------------------------------|------------------------|
-| `store.type` (string)                                                | The persistence layer type. Supported values: `CosmosDB`, `InMemory`                 | `CosmosDB`             |
-| `store.tenant_id` (string)                                           | Azure Tenant ID, if using a Cosmos DB store with Client Secret Credentials auth.     | -                      |
-| `store.client_id` (string)                                           | Azure Client ID, if using a Cosmos DB store with Client Secret Credentials auth.     | -                      |
-| `store.secret` (string)                                              | Azure Client Secret, if using a Cosmos DB store with Client Secret Credentials auth. | -                      |
-| `store.cosmos_account_uri` (string)                                  | Cosmos Account URI, if using a Cosmos DB store                                       | -                      |
-| `store.cosmos_account_key` (string)                                  | Cosmos DB account key, if using a Cosmos DB store with Account Key auth.             | -                      |
-| `store.cosmos_db_name` (string)                                      | Cosmos DB database name, if using a Cosmos DB store                                  | `scim_2_identity_pool` |
-| `authentication.azure_key_vault.vault_name` (string)                 | AKV name, if bearer token is stored in AKV.                                          | -                      |
-| `authentication.azure_key_vault.secret_name` (string)                | AKV secret name, if bearer token is stored in AKV.                                   | `scim-2-api-token`     |
-| `authentication.azure_key_vault.credentials_client` (string)         | Credentials client type, if bearer token is stored in AKV.                           | `default`              |
-| `authentication.azure_key_vault.create_secret_if_not_present` (bool) | Try to create an AKV secret on startup, if bearer token to be stored in AKV.         | `false`                |
-| `authentication.secret` (string)                                     | Plain secret bearer token                                                            | -                      |
-| `authentication.azure_key_vault.vault_name` (string)                 | AKV name, if bearer token is stored in AKV.                                          | -                      |
+1. **YAML file:** You can mount a volume with a YAML file adhering to the configuration schema (see table below)
+   and instruct the container to load the file from a path specified in the `CONFIG_PATH` environment variable.
 
+   The following example uses a Cosmos DB store and loads the API bearer token from an Azure key vault,
+   both interacting with their respective Azure service with a managed identity (default credentials):
+
+   ```yaml
+   store:
+     type: CosmosDB
+     cosmos_account_uri: https://mycosmosdbaccount.documents.azure.com:443/
+   authentication:
+     akv:
+       vault_name: mykeyvault
+       secret_name: scim2bearertoken
+   ```
+2. **Environment variables:** You can populate some, all, or none of the configuration keys using environment
+   variables.  All configuration keys can be represented by an environment variable by
+   the capitalizing the entire key name and replacing the nesting dot (`.`) annotation with
+   an underscore (`_`).
+
+   For example, `store.cosmos_account_key` can be populated with the
+   `STORE_COSMOS_ACCOUNT_KEY` environment variable in the container the API is running in.
+
+**Please note:** 
+
+| **Key**                                                                           | **Type** | **Description**                                                                      | **Default Value**      |
+|-----------------------------------------------------------------------------------|----------|--------------------------------------------------------------------------------------|------------------------|
+| store.<br>&nbsp;&nbsp;type                                                        | string   | The persistence layer type. Supported values: `CosmosDB`, `InMemory`                 | `CosmosDB`             |
+| store.<br>&nbsp;&nbsp;tenant_id                                                   | string   | Azure Tenant ID, if using a Cosmos DB store with Client Secret Credentials auth.     | -                      |
+| store.<br>&nbsp;&nbsp;client_id                                                   | string   | Azure Client ID, if using a Cosmos DB store with Client Secret Credentials auth.     | -                      |
+| store.<br>&nbsp;&nbsp;secret                                                      | string   | Azure Client Secret, if using a Cosmos DB store with Client Secret Credentials auth. | -                      |
+| store.<br>&nbsp;&nbsp;cosmos_account_uri                                          | string   | Cosmos Account URI, if using a Cosmos DB store                                       | -                      |
+| store.<br>&nbsp;&nbsp;cosmos_account_key                                          | string   | Cosmos DB account key, if using a Cosmos DB store with Account Key auth.             | -                      |
+| store.<br>&nbsp;&nbsp;cosmos_db_name                                              | string   | Cosmos DB database name, if using a Cosmos DB store                                  | `scim_2_identity_pool` |
+| authentication.<br>&nbsp;&nbsp;secret                                             | string   | Plain secret bearer token                                                            | -                      |
+| authentication.<br>&nbsp;&nbsp;akv.<br>&nbsp;&nbsp;&nbsp;&nbsp;vault_name         | string   | AKV name, if bearer token is stored in AKV.                                          | -                      |
+| authentication.<br>&nbsp;&nbsp;akv.<br>&nbsp;&nbsp;&nbsp;&nbsp;secret_name        | string   | AKV secret name, if bearer token is stored in AKV.                                   | `scim-2-api-token`     |
+| authentication.<br>&nbsp;&nbsp;akv.<br>&nbsp;&nbsp;&nbsp;&nbsp;credentials_client | string   | Credentials client type, if bearer token is stored in AKV.                           | `default`              |
+| authentication.<br>&nbsp;&nbsp;akv.<br>&nbsp;&nbsp;&nbsp;&nbsp;force_create       | bool     | Try to create an AKV secret on startup, if bearer token to be stored in AKV.         | `false`                |
 
 ## Deploy the API
 

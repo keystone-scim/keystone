@@ -19,10 +19,10 @@ SCHEMA = Schema({
         Optional("cosmos_db_name", default="scim_2_identity_pool"): str,
     }),
     Optional("authentication", default={}): Schema({
-        Optional("azure_key_vault", default={}): Schema({
+        Optional("akv", default={}): Schema({
             Optional("vault_name"): str,
             Optional("secret_name", default="scim-2-api-token"): str,
-            Optional("create_secret_if_not_present", default=False): bool,
+            Optional("force_create", default=False): bool,
             Optional("credentials_client", default="default"): str,
         }),
         Optional("secret"): str,

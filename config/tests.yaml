@@ -1,7 +1,7 @@
 store:
   type: InMemory
 authentication:
-  azure_key_vault:
+  akv:
     vault_name: scim-2-api-kv
-    create_secret_if_not_present: true
+    force_create: true
     credentials_client: cli
