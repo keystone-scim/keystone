@@ -2,8 +2,5 @@ store:
   type: CosmosDB
   cosmos_account_uri: <YOUR_COSMOS_ACCOUNT_URI>
   cosmos_account_key: <YOUR_COSMOS_ACCOUNT_KEY>
-provisioning:
-  groups: true
-  users_as_guests: false
 authentication:
   secret: not-so-secret
