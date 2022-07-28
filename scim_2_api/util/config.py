@@ -1,7 +1,7 @@
 import logging
 import os
 
-from azure_ad_scim_2_api.util import ThreadSafeSingleton
+from scim_2_api.util import ThreadSafeSingleton
 
 from schema import Optional, Schema
 import yaml

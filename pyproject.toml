@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "azure_ad_scim_2_api"
+name = "scim_2_api"
 version = "0.1.0-rc.0"
 description = "A SCIM 2.0 Provisioning API for Azure AD Tenants"
 authors = ["Yuval Herziger <yherziger@microsoft.com>"]
 license = "MIT"
 
 [tool.poetry.scripts]
-aad-scim2-api = 'azure_ad_scim_2_api.cmd:run'
+scim2-api = 'scim_2_api.cmd:run'
 
 [tool.poetry.dependencies]
 python = "^3.9"

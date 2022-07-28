@@ -2,7 +2,7 @@
 import logging
 import os
 
-from azure_ad_scim_2_api.util.logger import get_log_handler
+from scim_2_api.util.logger import get_log_handler
 
 # Initialize logger prior to loading any other modules:
 
@@ -13,8 +13,8 @@ if int(os.environ.get("JSON_LOGS", "1")) == 1:
 
 
 # Initialize config and store singletons:
-from azure_ad_scim_2_api.util.config import Config
-from azure_ad_scim_2_api.util.store_util import init_stores
+from scim_2_api.util.config import Config
+from scim_2_api.util.store_util import init_stores
 CONFIG = Config()
 init_stores()
 
@@ -22,11 +22,11 @@ import asyncio
 from aiohttp import web
 from aiohttp_apispec import AiohttpApiSpec
 
-from azure_ad_scim_2_api import VERSION
-from azure_ad_scim_2_api.rest import get_error_handling_mw
-from azure_ad_scim_2_api.rest.user import get_user_routes
-from azure_ad_scim_2_api.rest.group import get_group_routes
-from azure_ad_scim_2_api.security.az_keyvault_client import bearer_token_check
+from scim_2_api import VERSION
+from scim_2_api.rest import get_error_handling_mw
+from scim_2_api.rest.user import get_user_routes
+from scim_2_api.rest.group import get_group_routes
+from scim_2_api.security.az_keyvault_client import bearer_token_check
 
 
 async def health(_: web.Request):

@@ -5,8 +5,8 @@ from typing import Dict
 import pytest
 from scim2_filter_parser.parser import SCIMParserError
 
-from azure_ad_scim_2_api.util.case_insensitive_dict import CaseInsensitiveDict
-from azure_ad_scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists
+from scim_2_api.util.case_insensitive_dict import CaseInsensitiveDict
+from scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists
 
 
 class TestMemoryStore:

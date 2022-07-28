@@ -1,7 +1,7 @@
 from marshmallow import fields, Schema
 
-from azure_ad_scim_2_api.models import BaseResource, ListResponse
-from azure_ad_scim_2_api.models.group import Group
+from scim_2_api.models import BaseResource, ListResponse
+from scim_2_api.models.group import Group
 
 DEFAULT_USER_SCHEMA = "urn:ietf:params:scim:schemas:core:2.0:User"
 

@@ -1,8 +1,8 @@
 from aiohttp_catcher import Catcher, canned, catch
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
-from azure_ad_scim_2_api.models import DEFAULT_ERROR_SCHEMA
-from azure_ad_scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists, UnauthorizedRequest
+from scim_2_api.models import DEFAULT_ERROR_SCHEMA
+from scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists, UnauthorizedRequest
 
 
 async def get_error_handling_mw():

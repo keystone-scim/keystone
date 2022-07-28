@@ -2,8 +2,8 @@ import pytest
 
 from azure.core.exceptions import ResourceNotFoundError
 
-from azure_ad_scim_2_api.security.az_keyvault_client import SCIMTokenClient
-from azure_ad_scim_2_api.util.config import Config
+from scim_2_api.security.az_keyvault_client import SCIMTokenClient
+from scim_2_api.util.config import Config
 
 
 class TestSCIMTokenClient:

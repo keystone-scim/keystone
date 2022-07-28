@@ -8,9 +8,9 @@ from scim2_filter_parser.ast import LogExpr, Filter, AttrExpr, CompValue, AttrPa
 from scim2_filter_parser.parser import SCIMParser
 from scim2_filter_parser.lexer import SCIMLexer
 
-from azure_ad_scim_2_api.store import BaseStore
-from azure_ad_scim_2_api.util.case_insensitive_dict import CaseInsensitiveDict
-from azure_ad_scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists
+from scim_2_api.store import BaseStore
+from scim_2_api.util.case_insensitive_dict import CaseInsensitiveDict
+from scim_2_api.util.exc import ResourceNotFound, ResourceAlreadyExists
 
 
 def _norm_lst(lst: List, attr: str = "value") -> List:

@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema, validate
 
-from azure_ad_scim_2_api.models import BaseResource, DEFAULT_PATCH_OP_SCHEMA, ListResponse
+from scim_2_api.models import BaseResource, DEFAULT_PATCH_OP_SCHEMA, ListResponse
 
 DEFAULT_GROUP_SCHEMA = "urn:ietf:params:scim:schemas:core:2.0:Group"
 

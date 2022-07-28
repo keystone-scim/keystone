@@ -5,7 +5,7 @@ on:
   pull_request:
     types: [ opened ]
 env:
-  IMAGE_NAME: azure-ad-scim-2-api
+  IMAGE_NAME: scim-2-api-python
   IMAGE_TAG: main
 jobs:
   docker-build:
