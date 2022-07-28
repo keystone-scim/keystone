@@ -4,7 +4,7 @@ VERSION ?= $(shell git describe --tags --exact-match 2>/dev/null || git rev-pars
 DOCKER_BIN := docker
 PYTHON_BIN := python
 POETRY_BIN := poetry
-IMAGE_NAME := azure-ad-scim-2-api
+IMAGE_NAME := scim-2-api-python
 IMAGE_TAG := latest
 AZ_CLI_BIN := az
 PORT := 5001
@@ -16,11 +16,11 @@ build-image:
 .PHONY: unit-tests
 unit-tests: export CONFIG_PATH=./config/tests.yaml
 unit-tests:
-	$(POETRY_BIN) run pytest tests --verbose --cov=azure_ad_scim_2_api --asyncio-mode=strict
+	$(POETRY_BIN) run pytest tests --verbose --cov=scim_2_api --asyncio-mode=strict
 
 .PHONY: security-tests
 security-tests:
-	$(POETRY_BIN) run bandit -r ./azure_ad_scim_2_api
+	$(POETRY_BIN) run bandit -r ./scim_2_api
 
 .PHONY: docker-run-dev
 docker-run-dev:

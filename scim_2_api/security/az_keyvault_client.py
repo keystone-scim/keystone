@@ -7,9 +7,9 @@ from azure.identity import AzureCliCredential, DefaultAzureCredential
 from azure.identity.aio import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient, KeyVaultSecret
 
-from azure_ad_scim_2_api.util import ThreadSafeSingleton
-from azure_ad_scim_2_api.util.config import Config
-from azure_ad_scim_2_api.util.exc import UnauthorizedRequest
+from scim_2_api.util import ThreadSafeSingleton
+from scim_2_api.util.config import Config
+from scim_2_api.util.exc import UnauthorizedRequest
 
 from aiohttp import web
 

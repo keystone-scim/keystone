@@ -14,9 +14,9 @@ from azure.identity.aio import (
 )
 from scim2_filter_parser.queries import SQLQuery
 
-from azure_ad_scim_2_api.store import BaseStore
-from azure_ad_scim_2_api.util.config import Config
-from azure_ad_scim_2_api.util.exc import ResourceAlreadyExists
+from scim_2_api.store import BaseStore
+from scim_2_api.util.config import Config
+from scim_2_api.util.exc import ResourceAlreadyExists
 
 CONFIG = Config()
 LOGGER = logging.getLogger(__name__)

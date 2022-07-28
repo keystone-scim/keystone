@@ -47,7 +47,7 @@ WORKDIR $PYSETUP_PATH
 COPY --from=build $POETRY_HOME $POETRY_HOME
 COPY --from=build $PYSETUP_PATH $PYSETUP_PATH
 
-COPY ./azure_ad_scim_2_api /$PYSETUP_PATH/azure_ad_scim_2_api
+COPY ./scim_2_api /$PYSETUP_PATH/scim_2_api
 
 EXPOSE 5001
-CMD ["poetry", "run", "aad-scim2-api"]
+CMD ["poetry", "run", "scim2-api"]

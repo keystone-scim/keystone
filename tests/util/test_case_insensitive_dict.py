@@ -1,6 +1,6 @@
 import pytest
 
-from azure_ad_scim_2_api.util.case_insensitive_dict import CaseInsensitiveDict
+from scim_2_api.util.case_insensitive_dict import CaseInsensitiveDict
 
 
 class TestCaseInsensitiveDict:

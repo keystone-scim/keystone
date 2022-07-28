@@ -9,10 +9,10 @@ from aiohttp_apispec import (
     querystring_schema,
 )
 
-from azure_ad_scim_2_api.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
-from azure_ad_scim_2_api.models.group import Group, PatchGroupOp, ListGroupsResponse
-from azure_ad_scim_2_api.store import BaseStore
-from azure_ad_scim_2_api.util.store_util import Stores
+from scim_2_api.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
+from scim_2_api.models.group import Group, PatchGroupOp, ListGroupsResponse
+from scim_2_api.store import BaseStore
+from scim_2_api.util.store_util import Stores
 
 LOGGER = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
 import logging
 from typing import Dict
 
-from azure_ad_scim_2_api.store import BaseStore
-from azure_ad_scim_2_api.store.memory_store import MemoryStore
-from azure_ad_scim_2_api.store.cosmos_db_store import CosmosDbStore
-from azure_ad_scim_2_api.util import ThreadSafeSingleton
-from azure_ad_scim_2_api.util.config import Config
+from scim_2_api.store import BaseStore
+from scim_2_api.store.memory_store import MemoryStore
+from scim_2_api.store.cosmos_db_store import CosmosDbStore
+from scim_2_api.util import ThreadSafeSingleton
+from scim_2_api.util.config import Config
 
 
 CONFIG = Config()

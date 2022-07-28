@@ -5,9 +5,9 @@ import names
 import pytest
 from aiohttp import web
 
-from azure_ad_scim_2_api.store.memory_store import MemoryStore
-from azure_ad_scim_2_api.util.config import Config
-from azure_ad_scim_2_api.util.store_util import init_stores
+from scim_2_api.store.memory_store import MemoryStore
+from scim_2_api.util.config import Config
+from scim_2_api.util.store_util import init_stores
 
 
 def generate_random_user():
@@ -98,9 +98,9 @@ def memory_store():
 
 @pytest.fixture
 def scim_api(aiohttp_client, event_loop, cfg):
-    from azure_ad_scim_2_api.rest import get_error_handling_mw
-    from azure_ad_scim_2_api.rest.group import get_group_routes
-    from azure_ad_scim_2_api.rest.user import get_user_routes
+    from scim_2_api.rest import get_error_handling_mw
+    from scim_2_api.rest.group import get_group_routes
+    from scim_2_api.rest.user import get_user_routes
     scim_api = web.Application()
     scim_api.add_routes(get_user_routes(MemoryStore("User")))
     scim_api.add_routes(get_group_routes(MemoryStore(
