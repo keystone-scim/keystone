@@ -6,7 +6,7 @@ class BaseStore:
     filter_map = {}
     sensitive_fields = ["password"]
 
-    async def get_by_id(self, resource_id: str, with_nested_store: bool = False):
+    async def get_by_id(self, resource_id: str):
         raise NotImplementedError("Method 'get_by_id' not implemented")
 
     async def search(self, **kwargs: Dict):

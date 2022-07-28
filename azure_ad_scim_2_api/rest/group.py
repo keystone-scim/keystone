@@ -95,7 +95,10 @@ def get_group_routes(_group_store: BaseStore = None):
                 }
             """
             group_id = self.request.match_info["group_id"]
-            group = group_store.resource_db[group_id]
+            if hasattr(group_store, "resource_db"):
+                group = group_store.resource_db[group_id]
+            else:
+                group = await group_store.get_by_id(group_id)
             op_type = operation.get("op")
             op_value = operation.get("value")
             op_path = operation.get("path")

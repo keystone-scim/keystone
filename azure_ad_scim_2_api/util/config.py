@@ -10,10 +10,13 @@ import yaml
 LOGGER = logging.getLogger(__name__)
 SCHEMA = Schema({
     Optional("store", default={}): Schema({
-        Optional("type", default="AzureAD"): str,
+        Optional("type", default="CosmosDB"): str,
         Optional("tenant_id"): str,
         Optional("client_id"): str,
         Optional("client_secret"): str,
+        Optional("cosmos_account_uri"): str,
+        Optional("cosmos_account_key"): str,
+        Optional("cosmos_db_name", default="scim_2_identity_pool"): str,
     }),
     Optional("authentication", default={}): Schema({
         Optional("azure_key_vault", default={}): Schema({
