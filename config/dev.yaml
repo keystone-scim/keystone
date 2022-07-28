@@ -1,8 +1,5 @@
 store:
   type: InMemory
-provisioning:
-  groups: true
-  users_as_guests: false
 authentication:
 #  azure_key_vault:
 #    vault_name: scim-2-api-kv

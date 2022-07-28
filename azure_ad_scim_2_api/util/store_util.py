@@ -3,6 +3,7 @@ from typing import Dict
 
 from azure_ad_scim_2_api.store import BaseStore
 from azure_ad_scim_2_api.store.memory_store import MemoryStore
+from azure_ad_scim_2_api.store.cosmos_db_store import CosmosDbStore
 from azure_ad_scim_2_api.util import ThreadSafeSingleton
 from azure_ad_scim_2_api.util.config import Config
 
@@ -25,16 +26,10 @@ class Stores(metaclass=ThreadSafeSingleton):
 def init_stores():
     store_type = CONFIG.get("store.type", "InMemory")
     store_impl: BaseStore
-    if store_type == "AzureAD":
-        # TODO: implement AAD store & initialize.
+    if store_type == "CosmosDB":
         stores = Stores(
-            users=MemoryStore("User"),
-            groups=MemoryStore(
-                "Group",
-                name_uniqueness=True,
-                resources=None,
-                nested_store_attr="members"
-            )
+            users=CosmosDbStore("users", unique_attribute="userName"),
+            groups=CosmosDbStore("groups", unique_attribute="displayName")
         )
     elif store_type == "InMemory":
         stores = Stores(
