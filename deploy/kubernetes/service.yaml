@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: scim-2-api
+spec:
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  selector:
+    app.kubernetes.io/name: scim-2-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5001
+  sessionAffinity: ClientIP
+  internalTrafficPolicy: Cluster
