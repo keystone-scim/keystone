@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scim-2-api
+  labels:
+    app: scim-2-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: scim-2-api
+  template:
+    metadata:
+      labels:
+        app: scim-2-api
+    spec:
+      containers:
+      - name: scim-2-api-python
+        image: scim-2-api-python:latest
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: CONFIG_PATH
+            value: /tmp/config.yaml
+        ports:
+        - containerPort: 5001
+          name: scim-2-api
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            port: 5001
+            path: /health
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+
+
+
