@@ -14,9 +14,22 @@ build-image:
 	$(DOCKER_BIN) build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 .PHONY: unit-tests
-unit-tests: export CONFIG_PATH=./config/tests.yaml
+unit-tests: export CONFIG_PATH=./config/unit-tests.yaml
 unit-tests:
-	$(POETRY_BIN) run pytest tests --verbose --cov=scim_2_api --asyncio-mode=strict
+	$(POETRY_BIN) run pytest tests/unit -p no:warnings --cov=scim_2_api --asyncio-mode=strict
+
+.PHONY: integration-tests-mem-store
+integration-tests-mem-store: export CONFIG_PATH=./config/integration-tests-memory-store.yaml
+integration-tests-mem-store:
+	$(POETRY_BIN) run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict ; \
+	$(POETRY_BIN) run tests/integration/scripts/cleanup.py
+
+.PHONY: integration-tests-cosmos-store
+integration-tests-cosmos-store: export CONFIG_PATH=./config/integration-tests-cosmos-store.yaml
+integration-tests-cosmos-store: export STORE_COSMOS_DB_NAME=scim_int_tsts_$(shell date +%s)
+integration-tests-cosmos-store:
+	$(POETRY_BIN) run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict ; \
+	$(POETRY_BIN) run tests/integration/scripts/cleanup.py
 
 .PHONY: security-tests
 security-tests:

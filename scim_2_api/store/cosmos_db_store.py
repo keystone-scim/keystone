@@ -1,4 +1,5 @@
 import logging
+import re
 import uuid
 from typing import Dict, Union
 
@@ -118,6 +119,8 @@ class CosmosDbStore(BaseStore):
                 where = where.replace(f"{{{k}}}", f"@param{k}")
                 params.append({"name": f"@param{k}", "value": parsed_params[k]})
         if len(where) > 0:
+            replace_re = r"^(.*)(c.userName)\s+=\s+(@\w+)(.*)$"
+            where = re.sub(replace_re, r"\1 STRINGEQUALS(\2, \3, true) \4", where)
             where = f"where {where}"
 
         query = f"SELECT * FROM c {where} {pagination}"
@@ -242,3 +245,12 @@ class CosmosDbStore(BaseStore):
         except exceptions.CosmosHttpResponseError:
             _ = database.get_container_client(self.container_name)
             pass
+
+    async def clean_up_store(self):
+        client_creds = await get_client_credentials()
+        uri = self.account_uri
+        async with AsyncCosmosClient(uri, credential=client_creds) as client:
+            try:
+                _ = await client.delete_database(CONFIG.get("store.cosmos_db_name"))
+            except exceptions.CosmosHttpResponseError:
+                raise

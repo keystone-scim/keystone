@@ -1,7 +1,9 @@
 # Python SCIM 2.0 API
 
-![Build](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/build.yaml/badge.svg?branch=main)
-![Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/tests.yaml/badge.svg?branch=main)
+![Build](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/docker_build.yaml/badge.svg?branch=main)
+![Unit Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/unit_tests.yaml/badge.svg?branch=main)
+![Integration Tests Cosmos DB](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_test_cosmos_store.yaml/badge.svg?branch=main)
+![Integration Tests In-Mem](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_test_memory_store.yaml/badge.svg?branch=main)
 
 A containerized, Python-based [SCIM 2.0 API](https://datatracker.ietf.org/doc/html/rfc7644) implementation in asynchronous
 Python 3.9, using [asyncio](https://docs.python.org/3/library/asyncio.html)
