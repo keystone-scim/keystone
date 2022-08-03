@@ -1,0 +1,4 @@
+store:
+  type: CosmosDB
+authentication:
+  secret: not-so-secret

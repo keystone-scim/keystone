@@ -256,3 +256,6 @@ class MemoryStore(BaseStore):
                     r_exp,
                 ]
             }
+
+    async def clean_up_store(self):
+        pass
