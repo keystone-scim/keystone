@@ -31,7 +31,7 @@ jobs:
         run: |
           STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
           STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}" \
-          poetry run run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
+          poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
       - name: Clean up
         run: |
           STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
