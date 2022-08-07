@@ -1,5 +1,6 @@
 # Python SCIM 2.0 API
 
+![GHCR](https://ghcr-badge.herokuapp.com/yuvalherziger/scim-2-api-python/latest_tag?color=blue&label=%F0%9F%90%B3%20latest)
 ![Build](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/docker_build.yaml/badge.svg?branch=main)
 ![Unit Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/unit_tests.yaml/badge.svg?branch=main)
 ![Integration Tests Cosmos DB](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_test_cosmos_store.yaml/badge.svg?branch=main)
