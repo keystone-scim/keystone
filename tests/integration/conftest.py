@@ -7,8 +7,8 @@ from aiohttp import web
 from aiohttp.test_utils import BaseTestServer, TestServer, TestClient
 from aiohttp.web_app import Application
 
-from scim_2_api.util.config import Config
-from scim_2_api.util.store_util import init_stores, Stores
+from keystone.util.config import Config
+from keystone.util.store_util import init_stores, Stores
 
 
 def build_user(first_name, last_name, guid):
@@ -98,9 +98,9 @@ def module_scoped_aiohttp_client(module_scoped_event_loop):  # loop: asyncio.Abs
 
 @pytest.fixture(scope="module")
 def scim_api(module_scoped_aiohttp_client, module_scoped_event_loop, cfg, initial_user, headers):
-    from scim_2_api.rest import get_error_handling_mw
-    from scim_2_api.rest.group import get_group_routes
-    from scim_2_api.rest.user import get_user_routes
+    from keystone.rest import get_error_handling_mw
+    from keystone.rest.group import get_group_routes
+    from keystone.rest.user import get_user_routes
     scim_api = web.Application()
     scim_api.add_routes(get_user_routes())
     scim_api.add_routes(get_group_routes())

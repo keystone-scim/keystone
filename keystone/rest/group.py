@@ -9,10 +9,10 @@ from aiohttp_apispec import (
     querystring_schema,
 )
 
-from scim_2_api.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
-from scim_2_api.models.group import Group, PatchGroupOp, ListGroupsResponse
-from scim_2_api.store import BaseStore
-from scim_2_api.util.store_util import Stores
+from keystone.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
+from keystone.models.group import Group, PatchGroupOp, ListGroupsResponse
+from keystone.store import BaseStore
+from keystone.util.store_util import Stores
 
 LOGGER = logging.getLogger(__name__)
 

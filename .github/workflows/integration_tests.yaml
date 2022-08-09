@@ -1,0 +1,60 @@
+name: Integration Tests
+on:
+  push:
+    branches: [ main, 'release-*' ]
+  pull_request:
+    types: [ opened ]
+env:
+  COSMOS_CONFIG_PATH: "./config/integration-tests-cosmos-store.yaml"
+  IN_MEM_CONFIG_PATH: "./config/integration-tests-memory-store.yaml"
+  PG_CONFIG_PATH: "./config/integration-tests-pg-store.yaml"
+jobs:
+  ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.9" ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run Poetry image
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.1.13
+      - name: Install dependencies
+        run: poetry install
+      - name: In-Memory Integration Test
+        run: |
+          CONFIG_PATH=$IN_MEM_CONFIG_PATH \
+          poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
+      - name: Clean up In-Memory Integration Test
+        run: |
+          CONFIG_PATH=$IN_MEM_CONFIG_PATH \
+          poetry run tests/integration/scripts/cleanup.py
+      - name: Cosmos DB Integration Test
+        run: |
+          STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
+          STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}" \
+          CONFIG_PATH=$COSMOS_CONFIG_PATH \
+          STORE_COSMOS_DB_NAME=scim_int_tsts_$(date +%s) \
+          poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
+      - name: Clean up Cosmos DB Integration Test
+        run: |
+          STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
+          STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}" \
+          CONFIG_PATH=$COSMOS_CONFIG_PATH \
+          poetry run tests/integration/scripts/cleanup.py
+      - name: PostgreSQL Integration Test
+        run: |
+          CONFIG_PATH=$PG_CONFIG_PATH \
+          poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
+      - name: Clean up PostgreSQL Integration Test
+        run: |
+          STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
+          STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}" \
+          CONFIG_PATH=$PG_CONFIG_PATH \
+          poetry run tests/integration/scripts/cleanup.py

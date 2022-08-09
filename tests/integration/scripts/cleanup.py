@@ -2,8 +2,8 @@
 
 import asyncio
 
-from scim_2_api.util.config import Config
-from scim_2_api.util.store_util import Stores, init_stores
+from keystone.util.config import Config
+from keystone.util.store_util import Stores, init_stores
 
 CONFIG = Config()
 

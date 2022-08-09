@@ -1,7 +1,7 @@
 name: Unit Tests
 on:
   push:
-    branches: '*'
+    branches: ['*']
 env:
   CONFIG_PATH: "./config/unit-tests.yaml"
 jobs:

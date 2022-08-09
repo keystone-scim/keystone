@@ -1,9 +1,35 @@
-# Python SCIM 2.0 API
+# Keystone
+
+<img src="./logo/logo.png" alt="logo" width="200px" />
 
 ![Build](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/docker_build.yaml/badge.svg?branch=main)
 ![Unit Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/unit_tests.yaml/badge.svg?branch=main)
-![Integration Tests Cosmos DB](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_test_cosmos_store.yaml/badge.svg?branch=main)
-![Integration Tests In-Mem](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_test_memory_store.yaml/badge.svg?branch=main)
+![Integration Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_tests.yaml/badge.svg?branch=main)
+
+**What's Keystone?**
+
+**_Keystone_** is a fully containerized, lightweight SCIM 2.0 API implementation.
+
+Key features:
+
+* A compliant [SCIM 2.0](https://datatracker.ietf.org/doc/html/rfc7644).
+  REST API implementation for Users and Groups.
+* Stateless container - deploy it anywhere you want (e.g., Kubernetes).
+* Pluggable store for users and groups. Current supported storage technologies:
+  * Azure Cosmos DB
+  * PostgreSQL
+  * In-Memory (for testing purposes only)
+* Azure Key Vault bearer token retrieval.
+* Fully containerized.
+* Extensible stores:
+  * Can't use Cosmos DB or PostgreSQL?  Open an issue or fork, extend, and become a contributor.
+
+**tl;dr**:
+
+```shell
+docker pull yuvalherziger/keystone:latest
+docker run -p 5001:5001 yuvalherziger/keystone:latest
+```
 
 A containerized, Python-based [SCIM 2.0 API](https://datatracker.ietf.org/doc/html/rfc7644) implementation in asynchronous
 Python 3.9, using [asyncio](https://docs.python.org/3/library/asyncio.html)
@@ -37,6 +63,8 @@ Currently, the API implements the following stores:
   * [Implementing a Store](#implementing-a-store)
 
 ## Configure the API
+
+See [Keystone Configuration Reference](./config).
 
 You can configure the API in two ways, whilst both can be used in conjunction with one another:
 
@@ -162,6 +190,6 @@ You should now be able to inspect the OpenAPI specifications (Swagger docs) open
 
 ### Implementing a Store
 
-Implementing your store is possible implementing the [`BaseStore`](./scim_2_api/store/__init__.py) 
-class.  See [`CosmosDbStore`](./scim_2_api/store/cosmos_db_store.py) and
-[`MemoryStore`](./scim_2_api/store/memory_store.py) classes for implementation references.
+Implementing your store is possible implementing the [`BaseStore`](./keystone/store/__init__.py) 
+class.  See [`CosmosDbStore`](./keystone/store/cosmos_db_store.py) and
+[`MemoryStore`](./keystone/store/memory_store.py) classes for implementation references.
