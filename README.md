@@ -1,10 +1,10 @@
 # Keystone
+![GHCR](https://img.shields.io/github/v/release/yuvalherziger/keystone?label=Release&logo=task&logoColor=white&style=flat-square)&nbsp;
+![Docker Build](https://img.shields.io/github/workflow/status/yuvalherziger/keystone/Docker%20Build?label=Build&logo=docker&logoColor=white&style=flat-square)&nbsp;
+![Unit Tests](https://img.shields.io/github/workflow/status/yuvalherziger/keystone/Unit%20Tests?label=Unit&logo=pytest&logoColor=white&style=flat-square)&nbsp;
+![Integration Tests](https://img.shields.io/github/workflow/status/yuvalherziger/keystone/Integration%20Tests?label=Integration&logo=pytest&logoColor=white&style=flat-square)&nbsp;
 
 <img src="./logo/logo.png" alt="logo" width="200px" />
-
-![Build](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/docker_build.yaml/badge.svg?branch=main)
-![Unit Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/unit_tests.yaml/badge.svg?branch=main)
-![Integration Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_tests.yaml/badge.svg?branch=main)
 
 **What's Keystone?**
 
@@ -22,7 +22,9 @@ Key features:
 * Azure Key Vault bearer token retrieval.
 * Fully containerized.
 * Extensible stores:
-  * Can't use Cosmos DB or PostgreSQL?  Open an issue or fork, extend, and become a contributor.
+
+Can't use Cosmos DB or PostgreSQL?  Open an issue and/or consider
+[becoming a contributor](./CONTRIBUTING.md).
 
 **tl;dr**:
 

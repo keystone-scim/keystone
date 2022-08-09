@@ -3,7 +3,7 @@ import logging
 from loguru import logger
 
 
-VERSION = "0.1.0-rc.0"
+VERSION = "0.1.0-rc.1"
 LOGO = """
                             7P555555555555555P!
                         .^!7^55YYYYYYYYYYYYY55^?!^.

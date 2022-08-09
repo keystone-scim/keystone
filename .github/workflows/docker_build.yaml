@@ -3,7 +3,7 @@ on:
   push:
     branches: [ '*' ]
 env:
-  IMAGE_NAME: scim-2-api-python
+  IMAGE_NAME: keystone
   IMAGE_TAG: main
 jobs:
   docker-build:

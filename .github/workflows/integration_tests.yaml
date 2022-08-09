@@ -2,8 +2,6 @@ name: Integration Tests
 on:
   push:
     branches: [ main, 'release-*' ]
-  pull_request:
-    types: [ opened ]
 env:
   COSMOS_CONFIG_PATH: "./config/integration-tests-cosmos-store.yaml"
   IN_MEM_CONFIG_PATH: "./config/integration-tests-memory-store.yaml"
