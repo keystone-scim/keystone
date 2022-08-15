@@ -25,34 +25,34 @@ jobs:
           poetry-version: 1.1.13
       - name: Install dependencies
         run: poetry install
+      - name: In-Memory Integration Test Setup
+        run: export CONFIG_PATH=$IN_MEM_CONFIG_PATH
+
       - name: In-Memory Integration Test
-        run: |
-          CONFIG_PATH=$IN_MEM_CONFIG_PATH \
-          poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
+        run: poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
       - name: Clean up In-Memory Integration Test
+        run: poetry run tests/integration/scripts/cleanup.py
+
+      - name: Cosmos DB Integration Test Setup
         run: |
-          CONFIG_PATH=$IN_MEM_CONFIG_PATH \
-          poetry run tests/integration/scripts/cleanup.py
+          export STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}"
+          export STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}"
+          export CONFIG_PATH=$COSMOS_CONFIG_PATH
+          export STORE_COSMOS_DB_NAME=scim_int_tsts_$(date +%s)
       - name: Cosmos DB Integration Test
-        run: |
-          STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
-          STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}" \
-          CONFIG_PATH=$COSMOS_CONFIG_PATH \
-          STORE_COSMOS_DB_NAME=scim_int_tsts_$(date +%s) \
-          poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
+        run: poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
       - name: Clean up Cosmos DB Integration Test
+        run: poetry run tests/integration/scripts/cleanup.py
+
+      - name: PostgreSQL Integration Test Setup
         run: |
-          STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
-          STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}" \
-          CONFIG_PATH=$COSMOS_CONFIG_PATH \
-          poetry run tests/integration/scripts/cleanup.py
+          export STORE_PG_HOST="${{ secrets.STORE_PG_HOST }}"
+          export STORE_PG_USERNAME="${{ secrets.STORE_PG_USERNAME }}"
+          export STORE_PG_PASSWORD="${{ secrets.STORE_PG_PASSWORD }}"
+          export STORE_PG_DATABASE="${{ secrets.STORE_PG_DATABASE }}"
+          export STORE_PG_SCHEMA=int_tst_$(date +%s)
+          export CONFIG_PATH=$PG_CONFIG_PATH
       - name: PostgreSQL Integration Test
-        run: |
-          CONFIG_PATH=$PG_CONFIG_PATH \
-          poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
+        run: poetry run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict
       - name: Clean up PostgreSQL Integration Test
-        run: |
-          STORE_COSMOS_ACCOUNT_URI="${{ secrets.COSMOS_ACCOUNT_URI }}" \
-          STORE_COSMOS_ACCOUNT_KEY="${{ secrets.COSMOS_ACCOUNT_KEY }}" \
-          CONFIG_PATH=$PG_CONFIG_PATH \
-          poetry run tests/integration/scripts/cleanup.py
+        run: poetry run tests/integration/scripts/cleanup.py

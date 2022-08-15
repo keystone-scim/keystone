@@ -2,7 +2,7 @@ import pytest
 
 from azure.core.exceptions import ResourceNotFoundError
 
-from keystone.security.az_keyvault_client import SCIMTokenClient
+from keystone.security.authn import SCIMTokenClient
 from keystone.util.config import Config
 
 
