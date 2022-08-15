@@ -3,6 +3,7 @@ import logging
 import os
 
 from keystone import VERSION, LOGO, InterceptHandler
+from keystone.store.postgresql_store import set_up_schema
 from keystone.util.logger import get_log_handler
 
 # Initialize logger prior to loading any other modules:
@@ -29,7 +30,7 @@ from aiohttp_apispec import AiohttpApiSpec
 from keystone.rest import get_error_handling_mw
 from keystone.rest.user import get_user_routes
 from keystone.rest.group import get_group_routes
-from keystone.security.az_keyvault_client import bearer_token_check
+from keystone.security.authn import bearer_token_check
 
 
 async def health(_: web.Request):
@@ -46,8 +47,7 @@ async def print_logo(_logger):
 
 async def serve(host: str = "0.0.0.0", port: int = 5001):
     if CONFIG.get("store.type") == "PostgreSQL":
-        user_store = stores.get("users")
-        await user_store.setup()
+        set_up_schema()
 
     error_handling_mw = await get_error_handling_mw()
 

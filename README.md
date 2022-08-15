@@ -7,32 +7,45 @@
 
 <img src="./logo/logo.png" alt="logo" width="200px" />
 
+**Keystone** is a fully containerized lightweight SCIM 2.0 API implementation.
+
+## Getting started
+
+Run the service with zero config to test it:
+
+```shell
+# Pull the image:
+docker pull yuvalherziger/keystone:latest
+
+# Run the container:
+docker run -p 5001:5001 yuvalherziger/keystone:latest
+```
+
+See also [Keystone configuration](./config).
+
 **What's Keystone?**
 
-**_Keystone_** is a fully containerized, lightweight SCIM 2.0 API implementation.
+**Keystone** implements the SCIM 2.0 REST API.  If you run your identity management
+operations with an identity manager that supports user provisioning (e.g., Azure AD, Okta, etc.),
+you can use **Keystone** to persist directory changes. Keystone v0.1.0 supports two practical
+persistence layers: Azure Cosmos DB and PostgreSQL.
 
 Key features:
 
-* A compliant [SCIM 2.0](https://datatracker.ietf.org/doc/html/rfc7644).
-  REST API implementation for Users and Groups.
+* A compliant [SCIM 2.0 REST API](https://datatracker.ietf.org/doc/html/rfc7644)
+  implementation for Users and Groups.
 * Stateless container - deploy it anywhere you want (e.g., Kubernetes).
 * Pluggable store for users and groups. Current supported storage technologies:
   * Azure Cosmos DB
-  * PostgreSQL
+  * PostgreSQL (>= v.10)
   * In-Memory (for testing purposes only)
 * Azure Key Vault bearer token retrieval.
-* Fully containerized.
-* Extensible stores:
+* Extensible stores.
+
+TODO: CITEXT caveat: https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-extensions
 
 Can't use Cosmos DB or PostgreSQL?  Open an issue and/or consider
 [becoming a contributor](./CONTRIBUTING.md).
-
-**tl;dr**:
-
-```shell
-docker pull yuvalherziger/keystone:latest
-docker run -p 5001:5001 yuvalherziger/keystone:latest
-```
 
 A containerized, Python-based [SCIM 2.0 API](https://datatracker.ietf.org/doc/html/rfc7644) implementation in asynchronous
 Python 3.9, using [asyncio](https://docs.python.org/3/library/asyncio.html)
@@ -54,16 +67,6 @@ Currently, the API implements the following stores:
   Given its ephemeral nature, the in-memory store is meant to be used _strictly_ for development purposes.
   Inherently, the in-memory store shouldn't and cannot be used in a replicated deployment, since
   each node running the container will have its own store.
-
-**Table of Contents:**
-
-- [Configure the API](#configure-the-api)
-- [Deploy the API](#deploy-the-api)
-- [Development](#development)
-  * [Development using Docker](#development-using-docker)
-    * [Build the Image](#build-the-image)
-  * [Development using bare Python](#development-using-bare-python)
-  * [Implementing a Store](#implementing-a-store)
 
 ## Configure the API
 

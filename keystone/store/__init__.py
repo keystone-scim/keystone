@@ -1,5 +1,6 @@
 import re
-from typing import Dict
+from abc import ABC
+from typing import Dict, List
 
 
 class BaseStore:
@@ -50,3 +51,18 @@ class BaseStore:
             if sf in s_resource:
                 del s_resource[sf]
         return s_resource
+
+
+class RDBMSStore(BaseStore, ABC):
+
+    async def remove_users_from_group(self, user_ids: List[str], group_id: str):
+        raise NotImplementedError("Method 'remove_user_from_group' not implemented")
+
+    async def add_user_to_group(self, user_id: str, group_id: str):
+        raise NotImplementedError("Method 'add_user_to_group' not implemented")
+
+    async def set_group_members(self, users: List[Dict], group_id: str):
+        raise NotImplementedError("Method 'set_group_members' not implemented")
+
+    async def search_members(self, _filter: str, group_id: str):
+        raise NotImplementedError("Method 'search_members' not implemented")

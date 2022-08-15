@@ -24,6 +24,7 @@ class TestSpecUsernameCaseSensitivity:
                               ("Resources[0].userName", "dgonzales@company.com")])
     async def test_user_attribute_has_expected_value(username_case_sensitivity_response, attribute, expected_value):
         body = await username_case_sensitivity_response.json()
+        print(body)
         jsonpath_expr = parse(attribute)
         value = None
         for match in jsonpath_expr.find(body):

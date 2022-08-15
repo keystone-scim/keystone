@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union
 import logging
 
 from aiohttp import web
@@ -10,7 +10,7 @@ from aiohttp_apispec import (
 
 from keystone.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA, AuthHeaders
 from keystone.models.user import User, ListUsersResponse
-from keystone.store import BaseStore
+from keystone.store import BaseStore, RDBMSStore
 from keystone.util.store_util import Stores
 
 LOGGER = logging.getLogger(__name__)
@@ -18,8 +18,7 @@ LOGGER = logging.getLogger(__name__)
 
 def get_user_routes(_user_store: BaseStore = None):
     user_routes = web.RouteTableDef()
-
-    user_store = _user_store or Stores().get("users")
+    user_store: Union[BaseStore, RDBMSStore] = _user_store or Stores().get("users")
 
     @user_routes.view("/Users/{user_id}")
     class UserView(web.View):
