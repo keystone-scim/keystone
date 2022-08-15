@@ -1,7 +1,7 @@
 import logging
 import os
 
-from scim_2_api.util import ThreadSafeSingleton
+from keystone.util import ThreadSafeSingleton
 
 from schema import Optional, Schema
 import yaml
@@ -17,6 +17,14 @@ SCHEMA = Schema({
         Optional("cosmos_account_uri"): str,
         Optional("cosmos_account_key"): str,
         Optional("cosmos_db_name", default="scim_2_identity_pool"): str,
+
+        Optional("pg_host", "localhost"): str,
+        Optional("pg_port", default=5432): int,
+        Optional("pg_ssl_mode", default="require"): str,
+        Optional("pg_username"): str,
+        Optional("pg_password"): str,
+        Optional("pg_database", "postgres"): str,
+        Optional("pg_schema", "public"): str,
     }),
     Optional("authentication", default={}): Schema({
         Optional("akv", default={}): Schema({

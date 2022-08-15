@@ -15,8 +15,8 @@ spec:
         app: scim-2-api
     spec:
       containers:
-      - name: scim-2-api-python
-        image: scim-2-api-python:latest
+      - name: keystone
+        image: keystone:latest
         imagePullPolicy: IfNotPresent
         env:
           - name: CONFIG_PATH

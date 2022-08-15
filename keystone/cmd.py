@@ -2,31 +2,35 @@
 import logging
 import os
 
-from scim_2_api.util.logger import get_log_handler
+from keystone import VERSION, LOGO, InterceptHandler
+from keystone.store.postgresql_store import set_up_schema
+from keystone.util.logger import get_log_handler
 
 # Initialize logger prior to loading any other modules:
 
-logger = logging.getLogger()
-if int(os.environ.get("JSON_LOGS", "1")) == 1:
+if int(os.environ.get("JSON_LOGS", "0")) == 1:
+    logger = logging.getLogger()
     logger.propagate = True
     logger.handlers = [get_log_handler()]
-
+else:
+    logger = logging.getLogger()
+    logger.propagate = True
+    logger.handlers = [InterceptHandler()]
 
 # Initialize config and store singletons:
-from scim_2_api.util.config import Config
-from scim_2_api.util.store_util import init_stores
+from keystone.util.config import Config
+from keystone.util.store_util import init_stores
 CONFIG = Config()
-init_stores()
+stores = init_stores()
 
 import asyncio
 from aiohttp import web
 from aiohttp_apispec import AiohttpApiSpec
 
-from scim_2_api import VERSION
-from scim_2_api.rest import get_error_handling_mw
-from scim_2_api.rest.user import get_user_routes
-from scim_2_api.rest.group import get_group_routes
-from scim_2_api.security.az_keyvault_client import bearer_token_check
+from keystone.rest import get_error_handling_mw
+from keystone.rest.user import get_user_routes
+from keystone.rest.group import get_group_routes
+from keystone.security.authn import bearer_token_check
 
 
 async def health(_: web.Request):
@@ -37,7 +41,14 @@ async def root(_: web.Request):
     return web.HTTPFound("/api/docs")
 
 
+async def print_logo(_logger):
+    return [_logger.info(f" {ln}") for ln in LOGO.split("\n")]
+
+
 async def serve(host: str = "0.0.0.0", port: int = 5001):
+    if CONFIG.get("store.type") == "PostgreSQL":
+        set_up_schema()
+
     error_handling_mw = await get_error_handling_mw()
 
     # Create a sub-app for the SCIM 2.0 API to handle authentication separately from docs:
@@ -65,8 +76,9 @@ async def serve(host: str = "0.0.0.0", port: int = 5001):
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host=host, port=port)
+    await print_logo(logger)
     logger.info(
-        "API server listening on http://%s:%d, log level: %s", host, port, os.getenv("LOG_LEVEL", "INFO").upper()
+        "Keystone server listening on http://%s:%d, log level: %s", host, port, os.getenv("LOG_LEVEL", "INFO").upper()
     )
     await site.start()
 

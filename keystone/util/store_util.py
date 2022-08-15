@@ -1,11 +1,12 @@
 import logging
 from typing import Dict
 
-from scim_2_api.store import BaseStore
-from scim_2_api.store.memory_store import MemoryStore
-from scim_2_api.store.cosmos_db_store import CosmosDbStore
-from scim_2_api.util import ThreadSafeSingleton
-from scim_2_api.util.config import Config
+from keystone.store import BaseStore
+from keystone.store.memory_store import MemoryStore
+from keystone.store.cosmos_db_store import CosmosDbStore
+from keystone.store.postgresql_store import PostgresqlStore
+from keystone.util import ThreadSafeSingleton
+from keystone.util.config import Config
 
 
 CONFIG = Config()
@@ -30,6 +31,13 @@ def init_stores():
         stores = Stores(
             users=CosmosDbStore("users", unique_attribute="userName"),
             groups=CosmosDbStore("groups", unique_attribute="displayName")
+        )
+    elif store_type == "PostgreSQL":
+        user_store = PostgresqlStore("users")
+        group_store = PostgresqlStore("groups")
+        stores = Stores(
+            users=user_store,
+            groups=group_store
         )
     elif store_type == "InMemory":
         stores = Stores(

@@ -1,4 +1,5 @@
-from typing import Dict
+import asyncio
+from typing import Dict, Union
 import logging
 import sys
 
@@ -9,17 +10,19 @@ from aiohttp_apispec import (
     querystring_schema,
 )
 
-from scim_2_api.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
-from scim_2_api.models.group import Group, PatchGroupOp, ListGroupsResponse
-from scim_2_api.store import BaseStore
-from scim_2_api.util.store_util import Stores
+from keystone.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
+from keystone.models.group import Group, PatchGroupOp, ListGroupsResponse
+from keystone.store import BaseStore, RDBMSStore
+from keystone.util.store_util import Stores
 
 LOGGER = logging.getLogger(__name__)
 
 
-def get_group_routes(_group_store: BaseStore = None):
+def get_group_routes(_group_store: Union[BaseStore, RDBMSStore] = None,
+                     _user_store: Union[BaseStore, RDBMSStore] = None):
     group_routes = web.RouteTableDef()
-    group_store = _group_store or Stores().get("groups")
+    group_store: Union[BaseStore, RDBMSStore] = _group_store or Stores().get("groups")
+    user_store: Union[BaseStore, RDBMSStore] = _user_store or Stores().get("users")
 
     @group_routes.view("/Groups/{group_id}")
     class GroupView(web.View):
@@ -94,6 +97,7 @@ def get_group_routes(_group_store: BaseStore = None):
                     ]
                 }
             """
+            is_rdbms = isinstance(group_store, RDBMSStore)
             group_id = self.request.match_info["group_id"]
             if hasattr(group_store, "resource_db"):
                 group = group_store.resource_db[group_id]
@@ -108,24 +112,55 @@ def get_group_routes(_group_store: BaseStore = None):
                 return await group_store.update(group_id, **op_value)
             if op_path and op_path.startswith("members[") and not op_value:
                 # Remove members with a path:
-                selected_members, _ = await group["members_store"].search(
-                    _filter=op_path.strip("members[").strip("]"),
-                    start_index=1,
-                    count=sys.maxsize
-                )
-                for member in selected_members:
+                _filter = op_path.strip("members[").strip("]")
+                if is_rdbms:
                     if op_type == "remove":
-                        await group["members_store"].delete(member.get("value"))
+                        selected_members = await group_store.search_members(
+                            _filter=_filter, group_id=group_id
+                        )
+                        _ = await group_store.remove_users_from_group(
+                            user_ids=[m.get("id") for m in selected_members], group_id=group_id
+                        )
+                    elif op_type == "add":
+                        selected_members, _ = await user_store.search(_filter=_filter.replace("value", "id"))
+                        LOGGER.debug(str(selected_members))
+                        LOGGER.debug(op_type)
+                        LOGGER.debug(_filter)
+                        # TODO: Need to handle:
+                        for m in selected_members:
+                            _ = await group_store.add_user_to_group(
+                                user_id=m.get("id"), group_id=group_id
+                            )
                     return group
+                else:
+                    selected_members, _ = await group["members_store"].search(
+                        _filter=_filter,
+                        start_index=1,
+                        count=sys.maxsize
+                    )
+                    for member in selected_members:
+                        if op_type == "remove":
+                            _ = await group["members_store"].delete(member.get("value"))
+                        return group
             if op_path == "members" and op_type == "replace" and op_value:
-                return await group_store.update(group_id, **{"members": op_value})
+                if is_rdbms:
+                    _ = await group_store.set_group_members(users=op_value, group_id=group_id)
+                    return group
+                else:
+                    return await group_store.update(group_id, **{"members": op_value})
             if op_path == "members" and op_value:
                 for member in op_value:
                     member_id = member.get("value")
-                    if op_type == "add":
-                        await group["members_store"].create(member)
-                    elif op_type == "remove":
-                        await group["members_store"].delete(member_id)
+                    if is_rdbms:
+                        if op_type == "add":
+                            _ = await group_store.add_user_to_group(member.get("value"), group_id)
+                        elif op_type == "remove":
+                            _ = await group_store.remove_users_from_group([member.get("value")], group_id)
+                    else:
+                        if op_type == "add":
+                            await group["members_store"].create(member)
+                        elif op_type == "remove":
+                            await group["members_store"].delete(member_id)
                 return group
 
             return {}

@@ -1,11 +1,9 @@
 name: Docker Build
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    types: [ opened ]
+    branches: [ '*' ]
 env:
-  IMAGE_NAME: scim-2-api-python
+  IMAGE_NAME: keystone
   IMAGE_TAG: main
 jobs:
   docker-build:

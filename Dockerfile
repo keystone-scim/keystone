@@ -21,14 +21,25 @@ ENV PIP_DEFAULT_TIMEOUT=100 \
     PIP_NO_CACHE_DIR=1 \
     POETRY_VERSION=1.1.13
 
-RUN set -x && \
-    apk add --no-cache curl gcc libffi-dev libressl-dev musl-dev clang lld rust cargo
-
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-dev
+
+RUN set -x && \
+    apk add --no-cache --virtual .build-deps \
+      postgresql-dev \
+      build-base \
+      gcc \
+      curl \
+      python3-dev \
+      libffi-dev \
+      libressl-dev \
+      musl-dev \
+      lld \
+      rust \
+      cargo && \
+    curl -sSL https://install.python-poetry.org | python3 - && \
+    poetry install --no-dev && \
+    apk del --no-cache .build-deps
 
 # ------------------------
 # Runtime stage:
@@ -36,9 +47,8 @@ RUN poetry install --no-dev
 FROM base as runtime
 
 RUN set -x && \
-    apk add --no-cache libressl-dev rust
+    apk add --no-cache rust libpq
 
-# Avoid running the web service as a root user:
 RUN addgroup -S apigroup && \
     adduser -S apiuser -G apigroup
 USER apiuser
@@ -47,7 +57,7 @@ WORKDIR $PYSETUP_PATH
 COPY --from=build $POETRY_HOME $POETRY_HOME
 COPY --from=build $PYSETUP_PATH $PYSETUP_PATH
 
-COPY ./scim_2_api /$PYSETUP_PATH/scim_2_api
+COPY ./keystone /$PYSETUP_PATH/keystone
 
 EXPOSE 5001
-CMD ["poetry", "run", "scim2-api"]
+CMD ["poetry", "run", "keystone"]

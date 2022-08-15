@@ -1,10 +1,51 @@
-# Python SCIM 2.0 API
+# Keystone
 
-![GHCR](https://ghcr-badge.herokuapp.com/yuvalherziger/scim-2-api-python/latest_tag?color=blue&label=%F0%9F%90%B3%20latest)
-![Build](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/docker_build.yaml/badge.svg?branch=main)
-![Unit Tests](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/unit_tests.yaml/badge.svg?branch=main)
-![Integration Tests Cosmos DB](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_test_cosmos_store.yaml/badge.svg?branch=main)
-![Integration Tests In-Mem](https://github.com/yuvalherziger/scim-2-api-python/actions/workflows/integration_test_memory_store.yaml/badge.svg?branch=main)
+![GHCR](https://img.shields.io/github/v/release/yuvalherziger/keystone?label=Release&logo=task&logoColor=white&style=flat-square)&nbsp;
+![Docker Build](https://img.shields.io/github/workflow/status/yuvalherziger/keystone/Docker%20Build?label=Build&logo=docker&logoColor=white&style=flat-square)&nbsp;
+![Unit Tests](https://img.shields.io/github/workflow/status/yuvalherziger/keystone/Unit%20Tests?label=Unit&logo=pytest&logoColor=white&style=flat-square)&nbsp;
+![Integration Tests](https://img.shields.io/github/workflow/status/yuvalherziger/keystone/Integration%20Tests?label=Integration&logo=pytest&logoColor=white&style=flat-square)&nbsp;
+
+<img src="./logo/logo.png" alt="logo" width="200px" />
+
+**Keystone** is a fully containerized lightweight SCIM 2.0 API implementation.
+
+## Getting started
+
+Run the service with zero config to test it:
+
+```shell
+# Pull the image:
+docker pull yuvalherziger/keystone:latest
+
+# Run the container:
+docker run -p 5001:5001 yuvalherziger/keystone:latest
+```
+
+See also [Keystone configuration](./config).
+
+**What's Keystone?**
+
+**Keystone** implements the SCIM 2.0 REST API.  If you run your identity management
+operations with an identity manager that supports user provisioning (e.g., Azure AD, Okta, etc.),
+you can use **Keystone** to persist directory changes. Keystone v0.1.0 supports two practical
+persistence layers: Azure Cosmos DB and PostgreSQL.
+
+Key features:
+
+* A compliant [SCIM 2.0 REST API](https://datatracker.ietf.org/doc/html/rfc7644)
+  implementation for Users and Groups.
+* Stateless container - deploy it anywhere you want (e.g., Kubernetes).
+* Pluggable store for users and groups. Current supported storage technologies:
+  * Azure Cosmos DB
+  * PostgreSQL (>= v.10)
+  * In-Memory (for testing purposes only)
+* Azure Key Vault bearer token retrieval.
+* Extensible stores.
+
+TODO: CITEXT caveat: https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-extensions
+
+Can't use Cosmos DB or PostgreSQL?  Open an issue and/or consider
+[becoming a contributor](./CONTRIBUTING.md).
 
 A containerized, Python-based [SCIM 2.0 API](https://datatracker.ietf.org/doc/html/rfc7644) implementation in asynchronous
 Python 3.9, using [asyncio](https://docs.python.org/3/library/asyncio.html)
@@ -27,17 +68,9 @@ Currently, the API implements the following stores:
   Inherently, the in-memory store shouldn't and cannot be used in a replicated deployment, since
   each node running the container will have its own store.
 
-**Table of Contents:**
-
-- [Configure the API](#configure-the-api)
-- [Deploy the API](#deploy-the-api)
-- [Development](#development)
-  * [Development using Docker](#development-using-docker)
-    * [Build the Image](#build-the-image)
-  * [Development using bare Python](#development-using-bare-python)
-  * [Implementing a Store](#implementing-a-store)
-
 ## Configure the API
+
+See [Keystone Configuration Reference](./config).
 
 You can configure the API in two ways, whilst both can be used in conjunction with one another:
 
@@ -163,6 +196,6 @@ You should now be able to inspect the OpenAPI specifications (Swagger docs) open
 
 ### Implementing a Store
 
-Implementing your store is possible implementing the [`BaseStore`](./scim_2_api/store/__init__.py) 
-class.  See [`CosmosDbStore`](./scim_2_api/store/cosmos_db_store.py) and
-[`MemoryStore`](./scim_2_api/store/memory_store.py) classes for implementation references.
+Implementing your store is possible implementing the [`BaseStore`](./keystone/store/__init__.py) 
+class.  See [`CosmosDbStore`](./keystone/store/cosmos_db_store.py) and
+[`MemoryStore`](./keystone/store/memory_store.py) classes for implementation references.

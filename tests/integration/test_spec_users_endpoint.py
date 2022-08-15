@@ -3,7 +3,7 @@ import pytest
 from jsonpath_ng import parse
 import pytest_check as check
 
-from scim_2_api.models import DEFAULT_LIST_SCHEMA
+from keystone.models import DEFAULT_LIST_SCHEMA
 
 
 class TestSpecUsersEndpoint:
