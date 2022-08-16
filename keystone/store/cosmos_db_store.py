@@ -197,9 +197,6 @@ class CosmosDbStore(BaseStore):
                 pass
         return
 
-    async def parse_filter_expression(self, expr: str):
-        pass
-
     def init_client(self):
         account_uri = CONFIG.get("store.cosmos_account_uri")
         if not account_uri:

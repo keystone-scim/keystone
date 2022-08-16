@@ -18,17 +18,17 @@ def postgresql_stores(event_loop):
         host="localhost",
         port=5432,
         username="postgres",
-        password="supersecret",
+        password="postgres",
         ssl_mode="disable",
         database="postgres",
     )
     set_up_schema(**conn_args)
     user_store = PostgresqlStore("users", **conn_args)
-    #group_store = PostgresqlStore("groups", **conn_args)
-    yield user_store, None
-    #event_loop.run_until_complete(user_store.term_connection())
-    #event_loop.run_until_complete(asyncio.sleep(3))
-    # event_loop.run_until_complete(group_store.close_connection())
+    group_store = PostgresqlStore("groups", **conn_args)
+    yield user_store, group_store
+    event_loop.run_until_complete(user_store.clean_up_store())
+    event_loop.run_until_complete(user_store.term_connection())
+    event_loop.run_until_complete(group_store.term_connection())
 
 
 def generate_random_user():

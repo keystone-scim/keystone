@@ -12,6 +12,18 @@ jobs:
         python-version: [ "3.9" ]
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
+    services:
+      postgres:
+        image: postgres:13.8-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -24,4 +36,6 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Unit tests
-        run: poetry run pytest tests/unit -p no:warnings --asyncio-mode=strict
+        run: |
+          STORE_PG_SCHEMA=unit_test_$(date +%s) \
+          poetry run pytest tests/unit -p no:warnings --asyncio-mode=strict

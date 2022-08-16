@@ -16,7 +16,7 @@ build-image:
 .PHONY: unit-tests
 unit-tests: export CONFIG_PATH=./config/unit-tests.yaml
 unit-tests:
-	$(POETRY_BIN) run pytest tests/unit -p no:warnings --cov=keystone --asyncio-mode=strict
+	$(POETRY_BIN) run pytest tests/unit -p no:warnings --cov-report=html --cov=keystone --asyncio-mode=strict
 
 .PHONY: integration-tests-mem-store
 integration-tests-mem-store: export CONFIG_PATH=./config/integration-tests-memory-store.yaml

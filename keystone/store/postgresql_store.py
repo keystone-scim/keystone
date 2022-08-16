@@ -1,3 +1,4 @@
+import asyncio
 import re
 from datetime import datetime
 import logging
@@ -75,21 +76,23 @@ async def _transform_user(user_record: RowProxy) -> Dict:
 
 
 class PostgresqlStore(RDBMSStore):
-    engine: aiopg.sa.Engine
+    engine: aiopg.sa.Engine = None
     schema: str
     entity_type: str
     nested_store_attr: str
     last_conn = None
 
     attr_map = {
-        ('userName', None, None): 'users."userName"',
-        ('displayName', None, None): 'users."displayName"',
-        ('externalId', None, None): 'users."externalId"',
-        ('id', None, None): 'users.id',
-        ('active', None, None): 'users.active',
-        ('emails', None, None): 'c.emails.value',
-        ('emails', 'value', None): 'c.emails.value',
-        ('value', None, None): 'users_groups."userId"',
+        ("userName", None, None): "users.\"userName\"",
+        ("displayName", None, None): "users.\"displayName\"",
+        ("externalId", None, None): "users.\"externalId\"",
+        ("id", None, None): "users.id",
+        ("active", None, None): "users.active",
+        ("locale", None, None): "users.locale",
+        ("name", None, None): "users.name.formatted",
+        ("emails", None, None): "user_emails.value",
+        ("emails", "value", None): "user_emails.value",
+        ("value", None, None): "users_groups.\"userId\"",
     }
 
     def __init__(self, entity_type: str, **conn_args):
@@ -98,7 +101,8 @@ class PostgresqlStore(RDBMSStore):
         self.conn_args = conn_args
 
     async def get_engine(self):
-        if not self.last_conn or (datetime.now() - self.last_conn).total_seconds() > CONN_REFRESH_INTERVAL_SEC:
+        if not self.engine or not self.last_conn or (
+                datetime.now() - self.last_conn).total_seconds() > CONN_REFRESH_INTERVAL_SEC:
             LOGGER.debug("Establishing new PostgreSQL connection")
             self.last_conn = datetime.now()
             self.engine = await create_engine(dsn=build_dsn(**self.conn_args))
@@ -108,7 +112,8 @@ class PostgresqlStore(RDBMSStore):
     async def term_connection(self):
         engine = await self.get_engine()
         if engine:
-            _ = engine.terminate()
+            engine.close()
+            return await engine.wait_closed()
 
     async def _get_user_by_id(self, user_id: str) -> Dict:
         em_agg = text("""
@@ -165,7 +170,6 @@ class PostgresqlStore(RDBMSStore):
             return await self._get_user_by_id(resource_id)
         if self.entity_type == "groups":
             return await self._get_group_by_id(resource_id)
-        return
 
     async def search(self, _filter: str, start_index: int = 1, count: int = 100) -> tuple[list[Dict], int]:
         where = ""
@@ -195,7 +199,6 @@ class PostgresqlStore(RDBMSStore):
             where = insensitive_like.sub(" ILIKE ", where)
             q = q.where(text(where))
         q = q.group_by(text("1,2,3,4,5,6,7,8,9")).offset(start_index - 1).fetch(count)
-
         engine = await self.get_engine()
         async with engine.acquire() as conn:
             users = []
@@ -211,10 +214,9 @@ class PostgresqlStore(RDBMSStore):
             return await self._update_user(resource_id, **kwargs)
         if self.entity_type == "groups":
             return await self._update_group(resource_id, **kwargs)
-        return
 
     async def _update_user(self, user_id: str, **kwargs: Dict) -> Dict:
-        # "id" should be immutable, and "groups" are updated through the groups API:
+        # "id" is immutable, and "groups" are updated through the groups API:
         immutable_cols = ["id", "groups"]
         for immutable_col in immutable_cols:
             if immutable_col in kwargs:
@@ -258,14 +260,13 @@ class PostgresqlStore(RDBMSStore):
         engine = await self.get_engine()
         async with engine.acquire() as conn:
             _ = await conn.execute(q)
-            return await self._get_group_by_id(group_id)
+        return await self._get_group_by_id(group_id)
 
     async def create(self, resource: Dict):
         if self.entity_type == "users":
             return await self._create_user(resource)
         if self.entity_type == "groups":
             return await self._create_group(resource)
-        return
 
     async def _create_group(self, resource: Dict) -> Dict:
         group_id = resource.get("id") or str(uuid.uuid4())
@@ -273,7 +274,7 @@ class PostgresqlStore(RDBMSStore):
         insert_members = None
         if len(members) > 0:
             insert_members = insert(tbl.users_groups).values([
-                {"value": u.get("id") for u in members}
+                {"userId": u.get("value"), "groupId": group_id} for u in members
             ])
         insert_group = insert(tbl.groups).values(
             id=group_id,
@@ -283,7 +284,7 @@ class PostgresqlStore(RDBMSStore):
         engine = await self.get_engine()
         async with engine.acquire() as conn:
             _ = await conn.execute(insert_group)
-            if insert_members:
+            if insert_members is not None:
                 _ = await conn.execute(insert_members)
 
         return await self._get_group_by_id(group_id)
@@ -325,7 +326,6 @@ class PostgresqlStore(RDBMSStore):
             return await self._delete_user(resource_id)
         if self.entity_type == "groups":
             return await self._delete_group(resource_id)
-        return
 
     async def _delete_user(self, user_id: str):
         del_q = [
@@ -359,9 +359,6 @@ class PostgresqlStore(RDBMSStore):
                 raise ResourceNotFound("Group", group_id)
             _ = await conn.execute(del_q)
         return {}
-
-    async def parse_filter_expression(self, expr: str):
-        raise NotImplementedError("Method 'parse_filter_expression' not implemented")
 
     async def remove_users_from_group(self, user_ids: List[str], group_id: str):
         user_ids_s = ",".join([f"'{uid}'" for uid in user_ids])
@@ -402,7 +399,7 @@ class PostgresqlStore(RDBMSStore):
         parsed_params = parsed_q.params_dict
         for k in parsed_params.keys():
             where = where.replace(f"{{{k}}}", f"'{parsed_params[k]}'")
-        q = select([tbl.users_groups]).join(tbl.users, tbl.users.c.id == tbl.users_groups.c.userId).\
+        q = select([tbl.users_groups]).join(tbl.users, tbl.users.c.id == tbl.users_groups.c.userId). \
             where(and_(tbl.users_groups.c.groupId == group_id, text(where)))
         engine = await self.get_engine()
         async with engine.acquire() as conn:
@@ -414,5 +411,10 @@ class PostgresqlStore(RDBMSStore):
     async def clean_up_store(self) -> None:
         engine = await self.get_engine()
         async with engine.acquire() as conn:
-            _ = await conn.execute(text(f"DROP SCHEMA IF EXISTS {self.schema} CASCADE"))
+            _ = await conn.execute(delete(tbl.users))
+            _ = await conn.execute(delete(tbl.user_emails))
+            _ = await conn.execute(delete(tbl.users_groups))
+            _ = await conn.execute(delete(tbl.groups))
+            if self.schema != "public":
+                _ = await conn.execute(text(f"DROP SCHEMA IF EXISTS {self.schema} CASCADE"))
         return

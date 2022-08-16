@@ -22,9 +22,6 @@ class BaseStore:
     async def delete(self, resource_id: str):
         raise NotImplementedError("Method 'delete' not implemented")
 
-    async def parse_filter_expression(self, expr: str):
-        raise NotImplementedError("Method 'parse_filter' not implemented")
-
     def clean_up_store(self):
         raise NotImplementedError("Method 'clean_up_store' not implemented")
 
