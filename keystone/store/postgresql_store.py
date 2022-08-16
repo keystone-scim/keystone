@@ -47,7 +47,7 @@ def set_up_schema(**kwargs):
     cursor = conn.cursor()
     for q in ddl_queries:
         cursor.execute(q.format(schema))
-    conn.commit()
+        conn.commit()
     conn.close()
 
 
