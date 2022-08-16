@@ -27,7 +27,7 @@ In short, you can use the following Make command to run the container locally:
 make docker-run-dev
 ```
 
-This command will the following expanded command:
+This Make command will expand to the following `docker run` command:
 
 ```shell
 docker run \

@@ -37,5 +37,5 @@ jobs:
         run: poetry install
       - name: Unit tests
         run: |
-          STORE_PG_SCHEMA=unit_test_$(date +%s) \
+          ISTORE_PG_SCHEMA_IGNORE_THIS=unit_test_$(date +%s) \
           poetry run pytest tests/unit -p no:warnings --asyncio-mode=strict
