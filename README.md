@@ -30,10 +30,13 @@ Run the container with zero config to test it:
 
 ```shell
 # Pull the image:
-docker pull keystone-scim/keystone:latest
+docker pull ghcr.io/keystone-scim/keystone:latest
 
 # Run the container:
-docker run -p 5001:5001 keystone-scim/keystone:latest
+docker run -it \
+  -p 5001:5001 \ 
+  -e AUTHENTICATION_SECRET=supersecret \
+  ghcr.io/keystone-scim/keystone:latest
 ```
 
 Read the [Keystone documentation](https://keystone-scim.github.io) to understand how you can configure Keystone with
@@ -54,7 +57,7 @@ Key features:
 * Pluggable store for users and groups. Current supported storage technologies:
   * [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction)
   * [PostgreSQL](https://www.postgresql.org) (version 10 or higher)
-  * In-Memory (for testing purposes only).
+  
 * Azure Key Vault bearer token retrieval.
 * Extensible stores.
 
@@ -67,4 +70,4 @@ See [Keystone Documentation](https://keystone-scim.github.io).
 
 ## Development
 
-Please see the [Contribution Guide](./CONTRIBUTING.md) to get started
+Please see the [Contribution Guide](./CONTRIBUTING.md) to get started.

@@ -5,7 +5,7 @@ from loguru import logger
 _red = "\033[0;31m"
 _nc = "\033[0m"
 
-VERSION = "0.1.0-rc.2"
+VERSION = "0.1.0-rc.3"
 LOGO = """
                             ..............                            
                            .--------------. :                         

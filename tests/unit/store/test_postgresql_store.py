@@ -324,6 +324,11 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_search_groups(postgresql_stores, single_group):
-        # TODO: implement
-        assert True
+    async def test_search_groups(postgresql_stores, groups):
+        _, group_store = postgresql_stores
+        _ = await asyncio.gather(*[group_store.create(g) for g in groups])
+        _filter = f"displayName Eq \"Human Resources\""
+        res, count = await group_store.search(_filter)
+        assert 1 == count
+        assert "Human Resources" == res[0].get("displayName")
+
