@@ -1,5 +1,5 @@
-citext_extension = "CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA {};"
 scim_schema = "CREATE SCHEMA IF NOT EXISTS {};"
+citext_extension = "CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA {};"
 
 users_tbl = """
     CREATE TABLE IF NOT EXISTS {}.users (
@@ -50,5 +50,5 @@ user_emails_idx = """
     CREATE INDEX IF NOT EXISTS user_emails_value_index ON {}.user_emails("value");
 """
 
-ddl_queries = [citext_extension, scim_schema, users_tbl, users_idx, groups_tbl, groups_idx, users_groups_tbl,
+ddl_queries = [scim_schema, citext_extension, users_tbl, users_idx, groups_tbl, groups_idx, users_groups_tbl,
                user_emails_tbl, user_emails_idx]
