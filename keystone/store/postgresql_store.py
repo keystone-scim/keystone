@@ -1,10 +1,9 @@
-import asyncio
 import re
 from datetime import datetime
 import logging
 import urllib.parse
 import uuid
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import aiopg
 import psycopg2
@@ -13,6 +12,7 @@ from aiopg.sa.result import RowProxy
 from scim2_filter_parser.queries import SQLQuery
 from sqlalchemy import delete, insert, select, text, update, and_
 from sqlalchemy.sql.base import ImmutableColumnCollection
+from sqlalchemy.sql.elements import TextClause
 
 from keystone.models.user import DEFAULT_USER_SCHEMA
 from keystone.store import RDBMSStore
@@ -82,7 +82,7 @@ class PostgresqlStore(RDBMSStore):
     nested_store_attr: str
     last_conn = None
 
-    attr_map = {
+    user_attr_map = {
         ("userName", None, None): "users.\"userName\"",
         ("displayName", None, None): "users.\"displayName\"",
         ("externalId", None, None): "users.\"externalId\"",
@@ -93,6 +93,14 @@ class PostgresqlStore(RDBMSStore):
         ("emails", None, None): "user_emails.value",
         ("emails", "value", None): "user_emails.value",
         ("value", None, None): "users_groups.\"userId\"",
+    }
+
+    group_attr_map = {
+        ("displayName", None, None): "groups.\"displayName\"",
+        ("id", None, None): "groups.id",
+        ("members", "value", None): "users_groups.\"userId\"",
+        ("members", None, None): "users_groups.\"userId\"",
+        ("members", "display", None): "users.\"userName\"",
     }
 
     def __init__(self, entity_type: str, **conn_args):
@@ -171,33 +179,38 @@ class PostgresqlStore(RDBMSStore):
         if self.entity_type == "groups":
             return await self._get_group_by_id(resource_id)
 
-    async def search(self, _filter: str, start_index: int = 1, count: int = 100) -> tuple[list[Dict], int]:
-        where = ""
-        if _filter:
-            parsed_q = SQLQuery(_filter, self.entity_type, self.attr_map)
-            where = parsed_q.where_sql
-            parsed_params = parsed_q.params_dict
-            for k in parsed_params.keys():
-                where = where.replace(f"{{{k}}}", f"'{parsed_params[k]}'")
+    async def _get_where_clause_from_filter(self, _filter: str, attr_map: Dict) -> Optional[TextClause]:
+        if not _filter:
+            return None
+        parsed_q = SQLQuery(_filter, self.entity_type, attr_map)
+        where = parsed_q.where_sql
+        parsed_params = parsed_q.params_dict
+        for k in parsed_params.keys():
+            where = where.replace(f"{{{k}}}", f"'{parsed_params[k]}'")
+        if len(where) > 0:
+            insensitive_like = re.compile(re.escape(" LIKE "), re.IGNORECASE)
+            where = insensitive_like.sub(" ILIKE ", where)
+        return text(where)
+
+    async def _search_users(self, _filter: str, start_index: int = 1, count: int = 100) -> tuple[list[Dict], int]:
+        where_clause = await self._get_where_clause_from_filter(_filter, self.user_attr_map)
         em_agg = text("""
-            array_agg(json_build_object(
-                'value', user_emails.value,
-                'primary', user_emails.primary,
-                'type', user_emails.type
-            )) as emails
-        """)
+                    array_agg(json_build_object(
+                        'value', user_emails.value,
+                        'primary', user_emails.primary,
+                        'type', user_emails.type
+                    )) as emails
+                """)
         gr_agg = text("""
-            array_agg(json_build_object('displayName', groups."displayName")) as groups
-        """)
+                    array_agg(json_build_object('displayName', groups."displayName")) as groups
+                """)
         ct = text("count(*) OVER() as total")
         q = select([tbl.users, em_agg, gr_agg, ct]). \
             join(tbl.user_emails, tbl.users.c.id == tbl.user_emails.c.userId, isouter=True). \
             join(tbl.users_groups, tbl.users.c.id == tbl.users_groups.c.userId, isouter=True). \
             join(tbl.groups, tbl.groups.c.id == tbl.users_groups.c.groupId, isouter=True)
-        if len(where) > 0:
-            insensitive_like = re.compile(re.escape(" LIKE "), re.IGNORECASE)
-            where = insensitive_like.sub(" ILIKE ", where)
-            q = q.where(text(where))
+        if where_clause is not None:
+            q = q.where(where_clause)
         q = q.group_by(text("1,2,3,4,5,6,7,8,9")).offset(start_index - 1).fetch(count)
         engine = await self.get_engine()
         async with engine.acquire() as conn:
@@ -208,6 +221,31 @@ class PostgresqlStore(RDBMSStore):
                 total = row.total
 
         return users, total
+
+    async def _search_groups(self, _filter: str, start_index: int = 1, count: int = 100) -> tuple[list[Dict], int]:
+        where_clause = await self._get_where_clause_from_filter(_filter, self.group_attr_map)
+        ct = text("count(*) OVER() as total")
+        q = select([tbl.groups, text("'[]'::jsonb as members"), ct]). \
+            join(tbl.users_groups, tbl.groups.c.id == tbl.users_groups.c.groupId, isouter=True). \
+            join(tbl.users, tbl.users.c.id == tbl.users_groups.c.userId, isouter=True)
+
+        if where_clause is not None:
+            q = q.where(where_clause)
+        q = q.group_by(text("1,2,3,4")).offset(start_index - 1).fetch(count)
+        engine = await self.get_engine()
+        async with engine.acquire() as conn:
+            groups = []
+            total = 0
+            async for row in conn.execute(q):
+                groups.append(await _transform_group(row))
+                total = row.total
+        return groups, total
+
+    async def search(self, _filter: str, start_index: int = 1, count: int = 100) -> tuple[list[Dict], int]:
+        if self.entity_type == "users":
+            return await self._search_users(_filter, start_index, count)
+        if self.entity_type == "groups":
+            return await self._search_groups(_filter, start_index, count)
 
     async def update(self, resource_id: str, **kwargs: Dict):
         if self.entity_type == "users":
@@ -395,7 +433,7 @@ class PostgresqlStore(RDBMSStore):
         return
 
     async def search_members(self, _filter: str, group_id: str):
-        parsed_q = SQLQuery(_filter, "users_groups", self.attr_map)
+        parsed_q = SQLQuery(_filter, "users_groups", self.user_attr_map)
         where = parsed_q.where_sql
         parsed_params = parsed_q.params_dict
         for k in parsed_params.keys():
