@@ -25,24 +25,24 @@ LOGGER = logging.getLogger(__name__)
 CONN_REFRESH_INTERVAL_SEC = 1 * 60 * 60
 
 
-def build_dsn():
-    host = CONFIG.get("store.pg_host")
-    port = CONFIG.get("store.pg_port", 5432)
-    username = CONFIG.get("store.pg_username")
-    password = CONFIG.get("store.pg_password")
-    database = CONFIG.get("store.pg_database")
-    ssl_mode = CONFIG.get("store.pg_ssl_mode")
+def build_dsn(**kwargs):
+    host = kwargs.get("host", CONFIG.get("store.pg_host"))
+    port = kwargs.get("port", CONFIG.get("store.pg_port", 5432))
+    username = kwargs.get("username", CONFIG.get("store.pg_username"))
+    password = kwargs.get("password", CONFIG.get("store.pg_password"))
+    database = kwargs.get("database", CONFIG.get("store.pg_database"))
+    ssl_mode = kwargs.get("ssl_mode", CONFIG.get("store.pg_ssl_mode"))
     cred = username
     if password:
         cred = f"{cred}:{urllib.parse.quote(password)}"
     return f"postgres://{cred}@{host}:{port}/{database}?sslmode={ssl_mode}"
 
 
-def set_up_schema():
+def set_up_schema(**kwargs):
     conn = psycopg2.connect(
-        dsn=build_dsn()
+        dsn=build_dsn(**kwargs)
     )
-    schema = CONFIG.get("store.pg_schema")
+    schema = CONFIG.get("store.pg_schema", "public")
     cursor = conn.cursor()
     for q in ddl_queries:
         cursor.execute(q.format(schema))
@@ -92,17 +92,23 @@ class PostgresqlStore(RDBMSStore):
         ('value', None, None): 'users_groups."userId"',
     }
 
-    def __init__(self, entity_type: str):
+    def __init__(self, entity_type: str, **conn_args):
         self.schema = CONFIG.get("store.pg_schema")
         self.entity_type = entity_type
+        self.conn_args = conn_args
 
     async def get_engine(self):
         if not self.last_conn or (datetime.now() - self.last_conn).total_seconds() > CONN_REFRESH_INTERVAL_SEC:
             LOGGER.debug("Establishing new PostgreSQL connection")
             self.last_conn = datetime.now()
-            self.engine = await create_engine(dsn=build_dsn())
+            self.engine = await create_engine(dsn=build_dsn(**self.conn_args))
             LOGGER.debug("Established new PostgreSQL connection")
         return self.engine
+
+    async def term_connection(self):
+        engine = await self.get_engine()
+        if engine:
+            _ = engine.terminate()
 
     async def _get_user_by_id(self, user_id: str) -> Dict:
         em_agg = text("""

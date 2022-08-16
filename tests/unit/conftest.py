@@ -1,13 +1,34 @@
 import random
 import uuid
 
+import asyncio
 import names
 import pytest
 from aiohttp import web
 
 from keystone.store.memory_store import MemoryStore
+from keystone.store.postgresql_store import PostgresqlStore, set_up_schema
 from keystone.util.config import Config
 from keystone.util.store_util import init_stores
+
+
+@pytest.fixture
+def postgresql_stores(event_loop):
+    conn_args = dict(
+        host="localhost",
+        port=5432,
+        username="postgres",
+        password="supersecret",
+        ssl_mode="disable",
+        database="postgres",
+    )
+    set_up_schema(**conn_args)
+    user_store = PostgresqlStore("users", **conn_args)
+    #group_store = PostgresqlStore("groups", **conn_args)
+    yield user_store, None
+    #event_loop.run_until_complete(user_store.term_connection())
+    #event_loop.run_until_complete(asyncio.sleep(3))
+    # event_loop.run_until_complete(group_store.close_connection())
 
 
 def generate_random_user():
