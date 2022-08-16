@@ -306,6 +306,7 @@ class PostgresqlStore(RDBMSStore):
             active=resource.get("active"),
             customAttributes=custom_schemas
         ).returning()
+        emails = resource.get("emails", [{"primary": True, "value": resource.get("userName"), "type": "work"}])
         insert_emails = insert(tbl.user_emails).values([
             {
                 "id": str(uuid.uuid4()),
@@ -313,7 +314,7 @@ class PostgresqlStore(RDBMSStore):
                 "primary": email.get("primary", True),
                 "value": email.get("value"),
                 "type": email.get("type")
-            } for email in resource.get("emails")
+            } for email in emails
         ])
         engine = await self.get_engine()
         async with engine.acquire() as conn:
