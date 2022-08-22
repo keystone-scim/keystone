@@ -1,4 +1,4 @@
-import uuid
+import random
 from typing import Callable
 
 import asyncio
@@ -7,9 +7,14 @@ from aiohttp import web
 from aiohttp.test_utils import BaseTestServer, TestServer, TestClient
 from aiohttp.web_app import Application
 
-from keystone.store.postgresql_store import set_up_schema
+from keystone.store import postgresql_store
+from keystone.store import mongodb_store
 from keystone.util.config import Config
 from keystone.util.store_util import init_stores
+
+
+def gen_random_hex(length: int = 24):
+    return f"%0{length}x" % random.randrange(16**length)
 
 
 def build_user(first_name, last_name, guid):
@@ -45,23 +50,26 @@ def build_user(first_name, last_name, guid):
 
 @pytest.fixture(scope="module")
 def initial_user():
-    return build_user("Alex", "Smith", "58c08e90-fbe7-4460-970b-9b3a9840d661")
+    return build_user("Alex", "Smith", "6303270163fc418d32450cd9")
 
 
 @pytest.fixture(scope="module")
 def second_user():
-    return build_user("Daniel", "Gonzales", "458c6efc-f3c3-4606-b189-e347120068e6")
+    return build_user("Daniel", "Gonzales", "63033e376d9d20f702bc0a11")
 
 
 @pytest.fixture(scope="module")
 def module_scoped_event_loop():
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
 
 @pytest.fixture(scope="module")
-def module_scoped_aiohttp_client(module_scoped_event_loop):  # loop: asyncio.AbstractEventLoop):
+def module_scoped_aiohttp_client(module_scoped_event_loop):
     loop = module_scoped_event_loop
     clients = []
 
@@ -112,8 +120,10 @@ def scim_api(module_scoped_aiohttp_client, module_scoped_event_loop, cfg, initia
     app.middlewares.append(
         module_scoped_event_loop.run_until_complete(get_error_handling_mw())
     )
-    if cfg.get("store.type") == "PostgreSQL":
-        set_up_schema()
+    if cfg.get("store.pg.host") is not None:
+        postgresql_store.set_up_schema()
+    elif cfg.get("store.mongo.host") or cfg.get("store.mongo.dsn"):
+        module_scoped_event_loop.run_until_complete(mongodb_store.set_up())
     c = module_scoped_event_loop.run_until_complete(module_scoped_aiohttp_client(app))
     module_scoped_event_loop.run_until_complete(c.post("/scim/Users", json=initial_user, headers=headers))
     return c
@@ -163,14 +173,14 @@ def invalid_user_by_username_response(run_async, scim_api, headers):
 
 @pytest.fixture(scope="module")
 def invalid_user_by_id_response(run_async, scim_api, headers):
-    invalid_user_id = str(uuid.uuid4())
+    invalid_user_id = gen_random_hex()  # str(uuid.uuid4())
     url = f"/scim/Users/{invalid_user_id}"
     return run_async(scim_api.get(url, headers=headers))
 
 
 @pytest.fixture(scope="module")
 def random_user_nonexistent_response(run_async, scim_api, headers):
-    random_username = f"{str(uuid.uuid4())}@organization.org"
+    random_username = f"{gen_random_hex()}@organization.org"
     url = f"/scim/Users?filter=userName eq \"{random_username}\""
     return run_async(scim_api.get(url, headers=headers))
 

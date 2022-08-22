@@ -35,7 +35,14 @@ jobs:
           poetry-version: 1.1.13
       - name: Install dependencies
         run: poetry install
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: 5.0
+          mongodb-username: root
+          mongodb-password: example
+          mongodb-db: scim2UnitTest
+          mongodb-port: 27017
       - name: Unit tests
         run: |
-          ISTORE_PG_SCHEMA_IGNORE_THIS=unit_test_$(date +%s) \
           poetry run pytest tests/unit -p no:warnings --asyncio-mode=strict

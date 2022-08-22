@@ -1,5 +1,6 @@
 store:
   type: PostgreSQL
-  pg_schema: public
+  pg:
+    schema: public
 authentication:
   secret: not-so-secret

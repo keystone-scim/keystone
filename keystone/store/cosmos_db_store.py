@@ -28,12 +28,12 @@ async def get_client_credentials(async_client: bool = True):
     #       forces the usage of the main module to run aggregate queries with the
     #       'VALUE' keyword. The bug doesn't exist in the main module, therefore
     #       this function can currently produce non-async credentials.
-    cosmos_account_key = CONFIG.get("store.cosmos_account_key")
+    cosmos_account_key = CONFIG.get("store.cosmos.account_key")
     if cosmos_account_key:
         return cosmos_account_key
-    tenant_id = CONFIG.get("store.tenant_id")
-    client_id = CONFIG.get("store.client_id")
-    client_secret = CONFIG.get("store.client_secret")
+    tenant_id = CONFIG.get("store.cosmos.tenant_id")
+    client_id = CONFIG.get("store.cosmos.client_id")
+    client_secret = CONFIG.get("store.cosmos.client_secret")
     if tenant_id and client_id and client_secret:
         aad_credentials = AsyncClientSecretCredential(
             tenant_id=tenant_id,
@@ -71,7 +71,7 @@ class CosmosDbStore(BaseStore):
     def __init__(self, entity_name: str, key_attr: str = "id", unique_attribute: str = None):
         self.entity_name = entity_name
         self.key_attr = key_attr
-        self.account_uri = CONFIG.get("store.cosmos_account_uri")
+        self.account_uri = CONFIG.get("store.cosmos.account_uri")
         self.unique_attribute = unique_attribute
         self.container_name = f"scim2{self.entity_name}"
         self.init_client()
@@ -80,7 +80,7 @@ class CosmosDbStore(BaseStore):
         client_creds = await get_client_credentials()
         uri = self.account_uri
         async with AsyncCosmosClient(uri, credential=client_creds) as client:
-            database = client.get_database_client(CONFIG.get("store.cosmos_db_name"))
+            database = client.get_database_client(CONFIG.get("store.cosmos.db_name"))
             container = database.get_container_client(self.container_name)
             resource = await container.read_item(item=resource_id, partition_key=resource_id)
         return await remove_cosmos_metadata(resource)
@@ -93,7 +93,7 @@ class CosmosDbStore(BaseStore):
         client_creds = await get_client_credentials(async_client=False)
         try:
             c = CosmosClient(self.account_uri, credential=client_creds)
-            db = c.get_database_client(CONFIG.get("store.cosmos_db_name"))
+            db = c.get_database_client(CONFIG.get("store.cosmos.db_name"))
             co = db.get_container_client(self.container_name)
             count = 0
             for res in co.query_items(query=query, parameters=params, enable_cross_partition_query=True):
@@ -129,7 +129,7 @@ class CosmosDbStore(BaseStore):
         resources = []
         async with AsyncCosmosClient(uri, credential=client_creds) as client:
             try:
-                database = client.get_database_client(CONFIG.get("store.cosmos_db_name"))
+                database = client.get_database_client(CONFIG.get("store.cosmos.db_name"))
                 container = database.get_container_client(self.container_name)
                 iterator = container.query_items(query=query, parameters=params, populate_query_metrics=True)
                 async for resource in iterator:
@@ -146,7 +146,7 @@ class CosmosDbStore(BaseStore):
         client_creds = await get_client_credentials()
         uri = self.account_uri
         async with AsyncCosmosClient(uri, credential=client_creds) as client:
-            database = client.get_database_client(CONFIG.get("store.cosmos_db_name"))
+            database = client.get_database_client(CONFIG.get("store.cosmos.db_name"))
             container = database.get_container_client(self.container_name)
             try:
                 resource = await remove_cosmos_metadata(
@@ -162,7 +162,7 @@ class CosmosDbStore(BaseStore):
         client_creds = await get_client_credentials()
         uri = self.account_uri
         async with AsyncCosmosClient(uri, credential=client_creds) as client:
-            database = client.get_database_client(CONFIG.get("store.cosmos_db_name"))
+            database = client.get_database_client(CONFIG.get("store.cosmos.db_name"))
             container = database.get_container_client(self.container_name)
             resource_id = resource.get(self.key_attr) or str(uuid.uuid4())
             try:
@@ -189,7 +189,7 @@ class CosmosDbStore(BaseStore):
         client_creds = await get_client_credentials()
         uri = self.account_uri
         async with AsyncCosmosClient(uri, credential=client_creds) as client:
-            database = client.get_database_client(CONFIG.get("store.cosmos_db_name"))
+            database = client.get_database_client(CONFIG.get("store.cosmos.db_name"))
             container = database.get_container_client(self.container_name)
             try:
                 _ = await container.delete_item(item=resource_id, partition_key=resource_id)
@@ -198,15 +198,15 @@ class CosmosDbStore(BaseStore):
         return
 
     def init_client(self):
-        account_uri = CONFIG.get("store.cosmos_account_uri")
+        account_uri = CONFIG.get("store.cosmos.account_uri")
         if not account_uri:
             raise ValueError(
-                "Could not initialize Cosmos DB store. Missing configuration: 'store.cosmos_account_uri'"
+                "Could not initialize Cosmos DB store. Missing configuration: 'store.cosmos.account_uri'"
             )
-        tenant_id = CONFIG.get("store.tenant_id")
-        client_id = CONFIG.get("store.client_id")
-        client_secret = CONFIG.get("store.client_secret")
-        cosmos_account_key = CONFIG.get("store.cosmos_account_key")
+        tenant_id = CONFIG.get("store.cosmos.tenant_id")
+        client_id = CONFIG.get("store.cosmos.client_id")
+        client_secret = CONFIG.get("store.cosmos.client_secret")
+        cosmos_account_key = CONFIG.get("store.cosmos.account_key")
         if cosmos_account_key:
             client = CosmosClient(account_uri, credential=cosmos_account_key, consistency_level="Session")
         elif tenant_id and client_id and client_secret:
@@ -218,7 +218,7 @@ class CosmosDbStore(BaseStore):
             client = CosmosClient(account_uri, credential=aad_credentials, consistency_level="Session")
         else:
             client = CosmosClient(account_uri, credential=DefaultAzureCredential(), consistency_level="Session")
-        cosmos_db_name = CONFIG.get("store.cosmos_db_name")
+        cosmos_db_name = CONFIG.get("store.cosmos.db_name")
         try:
             database = client.create_database(cosmos_db_name)
         except (exceptions.CosmosResourceExistsError, exceptions.CosmosHttpResponseError):

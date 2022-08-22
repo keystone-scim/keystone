@@ -12,7 +12,7 @@ from aiohttp_apispec import (
 
 from keystone.models import ListQueryParams, ErrorResponse, DEFAULT_LIST_SCHEMA
 from keystone.models.group import Group, PatchGroupOp, ListGroupsResponse
-from keystone.store import BaseStore, RDBMSStore
+from keystone.store import BaseStore, RDBMSStore, DocumentStore, DatabaseStore
 from keystone.util.store_util import Stores
 
 LOGGER = logging.getLogger(__name__)
@@ -97,7 +97,9 @@ def get_group_routes(_group_store: Union[BaseStore, RDBMSStore] = None,
                     ]
                 }
             """
-            is_rdbms = isinstance(group_store, RDBMSStore)
+            is_dbs = isinstance(group_store, DatabaseStore)
+            is_rdbmss = isinstance(group_store, RDBMSStore)
+            is_docs = isinstance(group_store, DocumentStore)
             group_id = self.request.match_info["group_id"]
             if hasattr(group_store, "resource_db"):
                 group = group_store.resource_db[group_id]
@@ -113,20 +115,23 @@ def get_group_routes(_group_store: Union[BaseStore, RDBMSStore] = None,
             if op_path and op_path.startswith("members[") and not op_value:
                 # Remove members with a path:
                 _filter = op_path.strip("members[").strip("]")
-                if is_rdbms:
+                if is_dbs:
                     if op_type == "remove":
-                        selected_members = await group_store.search_members(
-                            _filter=_filter, group_id=group_id
-                        )
-                        _ = await group_store.remove_users_from_group(
-                            user_ids=[m.get("id") for m in selected_members], group_id=group_id
-                        )
+                        if is_rdbmss:
+                            selected_members = await group_store.search_members(
+                                _filter=_filter, group_id=group_id
+                            )
+                            _ = await group_store.remove_users_from_group(
+                                user_ids=[m.get("id") for m in selected_members], group_id=group_id
+                            )
+                        else:
+                            _filter = _filter.replace("value", "id").replace("display", "userName")
+                            u, _ = await user_store.search(_filter=_filter)
+                            _ = await group_store.remove_users_from_group(
+                                user_ids=[m.get("id") for m in u], group_id=group_id
+                            )
                     elif op_type == "add":
                         selected_members, _ = await user_store.search(_filter=_filter.replace("value", "id"))
-                        LOGGER.debug(str(selected_members))
-                        LOGGER.debug(op_type)
-                        LOGGER.debug(_filter)
-                        # TODO: Need to handle:
                         for m in selected_members:
                             _ = await group_store.add_user_to_group(
                                 user_id=m.get("id"), group_id=group_id
@@ -143,7 +148,7 @@ def get_group_routes(_group_store: Union[BaseStore, RDBMSStore] = None,
                             _ = await group["members_store"].delete(member.get("value"))
                         return group
             if op_path == "members" and op_type == "replace" and op_value:
-                if is_rdbms:
+                if is_dbs:
                     _ = await group_store.set_group_members(users=op_value, group_id=group_id)
                     return group
                 else:
@@ -151,7 +156,7 @@ def get_group_routes(_group_store: Union[BaseStore, RDBMSStore] = None,
             if op_path == "members" and op_value:
                 for member in op_value:
                     member_id = member.get("value")
-                    if is_rdbms:
+                    if is_dbs:
                         if op_type == "add":
                             _ = await group_store.add_user_to_group(member.get("value"), group_id)
                         elif op_type == "remove":

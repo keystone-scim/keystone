@@ -180,13 +180,13 @@ class MemoryStore(BaseStore):
         expr = parsed_filter.get("expr")
         f = expr.get("func")
         if f:
-            f = expr["func"]  # eq()
-            pred = expr["pred"]  # "f1aa2630-6343-41fa-bae4-384a46bc2ed3"
-            attr = expr["attr"].lower()  # "value"
-            op = expr["op"].lower()  # "eq"
-            attr_parts = attr.split(".")  # ["value"]
+            f = expr["func"]
+            pred = expr["pred"]
+            attr = expr["attr"].lower()
+            op = expr["op"].lower()
+            attr_parts = attr.split(".")
             node_attr_value = node
-            namespace = expr.get("namespace")  # "members"
+            namespace = expr.get("namespace")
             if namespace:
                 f = self.filter_map[f"{op}_lst"]
                 lst = node.get(namespace)

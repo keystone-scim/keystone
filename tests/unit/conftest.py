@@ -1,15 +1,24 @@
 import random
 import uuid
 
-import asyncio
 import names
 import pytest
 from aiohttp import web
 
 from keystone.store.memory_store import MemoryStore
 from keystone.store.postgresql_store import PostgresqlStore, set_up_schema
+from keystone.store import mongodb_store
 from keystone.util.config import Config
 from keystone.util.store_util import init_stores
+
+
+def gen_random_hex(length: int = 24):
+    return f"%0{length}x" % random.randrange(16**length)
+
+
+@pytest.fixture
+def rand_id():
+    return gen_random_hex(24)
 
 
 @pytest.fixture
@@ -29,6 +38,24 @@ def postgresql_stores(event_loop):
     event_loop.run_until_complete(user_store.clean_up_store())
     event_loop.run_until_complete(user_store.term_connection())
     event_loop.run_until_complete(group_store.term_connection())
+
+
+@pytest.fixture
+def mongodb_stores(event_loop):
+    conn_args = dict(
+        host="localhost",
+        port=27017,
+        username="root",
+        password="example",
+        tls=False,
+        database="scim2UnitTest",
+    )
+    event_loop.run_until_complete(mongodb_store.set_up(**conn_args))
+    user_store = mongodb_store.MongoDbStore("users", **conn_args)
+    group_store = mongodb_store.MongoDbStore("groups", **conn_args)
+    yield user_store, group_store
+    event_loop.run_until_complete(user_store.clean_up_store())
+    event_loop.run_until_complete(group_store.clean_up_store())
 
 
 def generate_random_user():
@@ -57,7 +84,7 @@ def generate_random_user():
         "schemas": [
             "urn:ietf:params:scim:schemas:core:2.0:User"
         ],
-        "id": str(uuid.uuid4()),
+        "id": gen_random_hex(24),
         "userName": email,
         "active": True,
         "displayName": f"{first_name} {last_name}"

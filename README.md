@@ -49,20 +49,23 @@ operations with an identity manager that supports user provisioning (e.g., Azure
 you can use **Keystone** to persist directory changes. Keystone v0.1.0 supports two
 persistence layers: PostgreSQL and Azure Cosmos DB.
 
+<div align="center">
+    <img src="./logo/how-it-works.png" alt="logo" />
+</div>
+
+
 Key features:
 
 * A compliant [SCIM 2.0 REST API](https://datatracker.ietf.org/doc/html/rfc7644)
   implementation for Users and Groups.
-* Stateless container - deploy it anywhere you want (e.g., Kubernetes).
+* Stateless container - deploy it anywhere you want (e.g., Kubernetes) and bring your own storage.
 * Pluggable store for users and groups. Current supported storage technologies:
   * [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction)
   * [PostgreSQL](https://www.postgresql.org) (version 10 or higher)
-  
+  * [MongoDB](https://www.mongodb.com/docs/) (version 3.6 or higher)
 * Azure Key Vault bearer token retrieval.
-* Extensible stores.
-
-Can't use Cosmos DB or PostgreSQL?  Open an issue and/or consider
-[becoming a contributor](./CONTRIBUTING.md).
+* Extensible store: Can't use MongoDB, Cosmos DB, or PostgreSQL?  Open an issue and/or consider
+  [becoming a contributor](./CONTRIBUTING.md) by implementing your own data store.
 
 ## Configure the API
 

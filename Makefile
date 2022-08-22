@@ -31,6 +31,13 @@ integration-tests-cosmos-store:
 	$(POETRY_BIN) run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict ; \
 	$(POETRY_BIN) run tests/integration/scripts/cleanup.py
 
+.PHONY: integration-tests-mongo-store
+integration-tests-mongo-store: export CONFIG_PATH=./config/integration-tests-mongo-store.yaml
+integration-tests-mongo-store: export STORE_MONGO_DATABASE=scim_int_tsts_$(shell date +%s)
+integration-tests-mongo-store:
+	$(POETRY_BIN) run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict ; \
+	$(POETRY_BIN) run tests/integration/scripts/cleanup.py
+
 .PHONY: security-tests
 security-tests:
 	$(POETRY_BIN) run bandit -r ./keystone

@@ -27,12 +27,12 @@ CONN_REFRESH_INTERVAL_SEC = 1 * 60 * 60
 
 
 def build_dsn(**kwargs):
-    host = kwargs.get("host", CONFIG.get("store.pg_host"))
-    port = kwargs.get("port", CONFIG.get("store.pg_port", 5432))
-    username = kwargs.get("username", CONFIG.get("store.pg_username"))
-    password = kwargs.get("password", CONFIG.get("store.pg_password"))
-    database = kwargs.get("database", CONFIG.get("store.pg_database"))
-    ssl_mode = kwargs.get("ssl_mode", CONFIG.get("store.pg_ssl_mode"))
+    host = kwargs.get("host", CONFIG.get("store.pg.host"))
+    port = kwargs.get("port", CONFIG.get("store.pg.port", 5432))
+    username = kwargs.get("username", CONFIG.get("store.pg.username"))
+    password = kwargs.get("password", CONFIG.get("store.pg.password"))
+    database = kwargs.get("database", CONFIG.get("store.pg.database"))
+    ssl_mode = kwargs.get("ssl_mode", CONFIG.get("store.pg.ssl_mode"))
     cred = username
     if password:
         cred = f"{cred}:{urllib.parse.quote(password)}"
@@ -43,7 +43,7 @@ def set_up_schema(**kwargs):
     conn = psycopg2.connect(
         dsn=build_dsn(**kwargs)
     )
-    schema = CONFIG.get("store.pg_schema", "public")
+    schema = CONFIG.get("store.pg.schema", "public")
     cursor = conn.cursor()
     for q in ddl_queries:
         cursor.execute(q.format(schema))
@@ -104,7 +104,7 @@ class PostgresqlStore(RDBMSStore):
     }
 
     def __init__(self, entity_type: str, **conn_args):
-        self.schema = CONFIG.get("store.pg_schema")
+        self.schema = CONFIG.get("store.pg.schema")
         self.entity_type = entity_type
         self.conn_args = conn_args
 
@@ -248,10 +248,11 @@ class PostgresqlStore(RDBMSStore):
             return await self._search_groups(_filter, start_index, count)
 
     async def update(self, resource_id: str, **kwargs: Dict):
+        sanitized = await self._sanitize(kwargs)
         if self.entity_type == "users":
-            return await self._update_user(resource_id, **kwargs)
+            return await self._update_user(resource_id, **sanitized)
         if self.entity_type == "groups":
-            return await self._update_group(resource_id, **kwargs)
+            return await self._update_group(resource_id, **sanitized)
 
     async def _update_user(self, user_id: str, **kwargs: Dict) -> Dict:
         # "id" is immutable, and "groups" are updated through the groups API:
@@ -301,10 +302,11 @@ class PostgresqlStore(RDBMSStore):
         return await self._get_group_by_id(group_id)
 
     async def create(self, resource: Dict):
+        sanitized = await self._sanitize(resource)
         if self.entity_type == "users":
-            return await self._create_user(resource)
+            return await self._create_user(sanitized)
         if self.entity_type == "groups":
-            return await self._create_group(resource)
+            return await self._create_group(sanitized)
 
     async def _create_group(self, resource: Dict) -> Dict:
         group_id = resource.get("id") or str(uuid.uuid4())
@@ -421,7 +423,7 @@ class PostgresqlStore(RDBMSStore):
             _ = await conn.execute(insert_q)
         return
 
-    async def set_group_members(self, user_ids: List[Dict], group_id: str):
+    async def set_group_members(self, user_ids: List[str], group_id: str):
         delete_q = delete(tbl.users_groups).where(tbl.users_groups.c.groupId == group_id)
         insert_q = insert(tbl.users_groups).values(
             [{"userId": uid, "groupId": group_id} for uid in user_ids]
