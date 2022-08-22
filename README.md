@@ -64,8 +64,8 @@ Key features:
   * [PostgreSQL](https://www.postgresql.org) (version 10 or higher)
   * [MongoDB](https://www.mongodb.com/docs/) (version 3.6 or higher)
 * Azure Key Vault bearer token retrieval.
-* Extensible store: Can't use Cosmos DB or PostgreSQL?  Open an issue and/or consider
-[becoming a contributor](./CONTRIBUTING.md).
+* Extensible store: Can't use MongoDB, Cosmos DB, or PostgreSQL?  Open an issue and/or consider
+  [becoming a contributor](./CONTRIBUTING.md) by implementing your own data store.
 
 ## Configure the API
 
