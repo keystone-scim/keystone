@@ -10,21 +10,34 @@ import yaml
 LOGGER = logging.getLogger(__name__)
 SCHEMA = Schema({
     Optional("store", default={}): Schema({
-        Optional("type", default="CosmosDB"): str,
-        Optional("tenant_id"): str,
-        Optional("client_id"): str,
-        Optional("client_secret"): str,
-        Optional("cosmos_account_uri"): str,
-        Optional("cosmos_account_key"): str,
-        Optional("cosmos_db_name", default="scim_2_identity_pool"): str,
-
-        Optional("pg_host", "localhost"): str,
-        Optional("pg_port", default=5432): int,
-        Optional("pg_ssl_mode", default="require"): str,
-        Optional("pg_username"): str,
-        Optional("pg_password"): str,
-        Optional("pg_database", "postgres"): str,
-        Optional("pg_schema", "public"): str,
+        Optional("type", default="InMemory"): str,
+        Optional("cosmos", default=None): Schema({
+            Optional("tenant_id"): str,
+            Optional("client_id"): str,
+            Optional("client_secret"): str,
+            Optional("account_uri"): str,
+            Optional("account_key"): str,
+            Optional("db_name", default="scim_2_db"): str,
+        }),
+        Optional("pg", default=None): Schema({
+            Optional("host"): str,
+            Optional("port", default=5432): int,
+            Optional("ssl_mode", default="require"): str,
+            Optional("username"): str,
+            Optional("password"): str,
+            Optional("database", default="postgres"): str,
+            Optional("schema", default="public"): str,
+        }),
+        Optional("mongo", default=None): Schema({
+            Optional("host"): str,
+            Optional("port", default=27017): int,
+            Optional("username"): str,
+            Optional("password"): str,
+            Optional("database", default="scim2Db"): str,
+            Optional("tls", default=True): bool,
+            Optional("replica_set", default=True): str,
+            Optional("dsn"): str,
+        })
     }),
     Optional("authentication", default={}): Schema({
         Optional("akv", default={}): Schema({

@@ -1,0 +1,8 @@
+store:
+  type: MongoDb
+  mongo:
+    host: localhost
+    port: 27017
+    tls: false
+authentication:
+  secret: not-so-secret

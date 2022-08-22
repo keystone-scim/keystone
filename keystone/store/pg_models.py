@@ -6,7 +6,7 @@ from keystone.util.config import Config
 metadata = sa.MetaData()
 
 CONFIG = Config()
-_schema = CONFIG.get("store.pg_schema", "public")
+_schema = CONFIG.get("store.pg.schema", "public")
 
 
 users = sa.Table(

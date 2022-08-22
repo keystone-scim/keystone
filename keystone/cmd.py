@@ -3,6 +3,7 @@ import logging
 import os
 
 from keystone import VERSION, LOGO, InterceptHandler
+from keystone.store.mongodb_store import set_up
 from keystone.store.postgresql_store import set_up_schema
 from keystone.util.logger import get_log_handler
 
@@ -46,8 +47,10 @@ async def print_logo(_logger):
 
 
 async def serve(host: str = "0.0.0.0", port: int = 5001):
-    if CONFIG.get("store.type") == "PostgreSQL":
+    if CONFIG.get("store.pg.host") is not None:
         set_up_schema()
+    elif CONFIG.get("store.mongo.host") or CONFIG.get("store.mongo.dsn"):
+        await set_up()
 
     error_handling_mw = await get_error_handling_mw()
 

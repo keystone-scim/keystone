@@ -50,8 +50,7 @@ class BaseStore:
         return s_resource
 
 
-class RDBMSStore(BaseStore, ABC):
-
+class DatabaseStore(BaseStore, ABC):
     async def remove_users_from_group(self, user_ids: List[str], group_id: str):
         raise NotImplementedError("Method 'remove_user_from_group' not implemented")
 
@@ -61,5 +60,12 @@ class RDBMSStore(BaseStore, ABC):
     async def set_group_members(self, users: List[Dict], group_id: str):
         raise NotImplementedError("Method 'set_group_members' not implemented")
 
+
+class RDBMSStore(DatabaseStore, ABC):
+
     async def search_members(self, _filter: str, group_id: str):
         raise NotImplementedError("Method 'search_members' not implemented")
+
+
+class DocumentStore(DatabaseStore, ABC):
+    pass

@@ -53,15 +53,13 @@ Key features:
 
 * A compliant [SCIM 2.0 REST API](https://datatracker.ietf.org/doc/html/rfc7644)
   implementation for Users and Groups.
-* Stateless container - deploy it anywhere you want (e.g., Kubernetes).
+* Stateless container - deploy it anywhere you want (e.g., Kubernetes) and bring your own storage.
 * Pluggable store for users and groups. Current supported storage technologies:
   * [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction)
   * [PostgreSQL](https://www.postgresql.org) (version 10 or higher)
-  
+  * [MongoDB](https://www.mongodb.com/docs/) (version 3.6 or higher)
 * Azure Key Vault bearer token retrieval.
-* Extensible stores.
-
-Can't use Cosmos DB or PostgreSQL?  Open an issue and/or consider
+* Extensible store: Can't use Cosmos DB or PostgreSQL?  Open an issue and/or consider
 [becoming a contributor](./CONTRIBUTING.md).
 
 ## Configure the API
