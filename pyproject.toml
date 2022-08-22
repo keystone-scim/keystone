@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "keystone"
-version = "0.1.0-rc.3"
+version = "0.1.0"
 description = "A SCIM 2.0 Provisioning API for Azure AD Tenants"
 authors = ["Yuval Herziger <yherziger@microsoft.com>"]
 license = "MIT"
