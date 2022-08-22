@@ -49,6 +49,11 @@ operations with an identity manager that supports user provisioning (e.g., Azure
 you can use **Keystone** to persist directory changes. Keystone v0.1.0 supports two
 persistence layers: PostgreSQL and Azure Cosmos DB.
 
+<div align="center">
+    <img src="./logo/how-it-works.png" alt="logo" />
+</div>
+
+
 Key features:
 
 * A compliant [SCIM 2.0 REST API](https://datatracker.ietf.org/doc/html/rfc7644)

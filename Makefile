@@ -36,7 +36,7 @@ integration-tests-mongo-store: export CONFIG_PATH=./config/integration-tests-mon
 integration-tests-mongo-store: export STORE_MONGO_DATABASE=scim_int_tsts_$(shell date +%s)
 integration-tests-mongo-store:
 	$(POETRY_BIN) run pytest tests/integration -p no:warnings --verbose --asyncio-mode=strict ; \
-	echo what #$(POETRY_BIN) run tests/integration/scripts/cleanup.py
+	$(POETRY_BIN) run tests/integration/scripts/cleanup.py
 
 .PHONY: security-tests
 security-tests:
