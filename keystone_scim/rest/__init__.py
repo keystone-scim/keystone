@@ -3,8 +3,8 @@ from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from psycopg2.errors import UniqueViolation
 from pymongo.errors import DuplicateKeyError
 
-from keystone.models import DEFAULT_ERROR_SCHEMA
-from keystone.util.exc import ResourceNotFound, ResourceAlreadyExists, UnauthorizedRequest
+from keystone_scim.models import DEFAULT_ERROR_SCHEMA
+from keystone_scim.util.exc import ResourceNotFound, ResourceAlreadyExists, UnauthorizedRequest
 
 
 async def get_error_handling_mw():

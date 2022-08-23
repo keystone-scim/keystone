@@ -60,4 +60,4 @@ COPY --from=build $PYSETUP_PATH $PYSETUP_PATH
 COPY ./keystone /$PYSETUP_PATH/keystone
 
 EXPOSE 5001
-CMD ["poetry", "run", "keystone"]
+CMD ["poetry", "run", "keystone-scim"]

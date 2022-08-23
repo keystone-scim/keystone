@@ -15,9 +15,9 @@ from azure.identity.aio import (
 )
 from scim2_filter_parser.queries import SQLQuery
 
-from keystone.store import BaseStore
-from keystone.util.config import Config
-from keystone.util.exc import ResourceAlreadyExists
+from keystone_scim.store import BaseStore
+from keystone_scim.util.config import Config
+from keystone_scim.util.exc import ResourceAlreadyExists
 
 CONFIG = Config()
 LOGGER = logging.getLogger(__name__)

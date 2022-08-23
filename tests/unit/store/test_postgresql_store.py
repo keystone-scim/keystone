@@ -5,7 +5,7 @@ import asyncio
 import pytest
 from psycopg2.errors import UniqueViolation
 
-from keystone.util.exc import ResourceNotFound
+from keystone_scim.util.exc import ResourceNotFound
 
 
 class TestPostgreSQLStore:

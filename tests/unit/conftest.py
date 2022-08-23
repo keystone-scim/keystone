@@ -5,11 +5,11 @@ import names
 import pytest
 from aiohttp import web
 
-from keystone.store.memory_store import MemoryStore
-from keystone.store.postgresql_store import PostgresqlStore, set_up_schema
-from keystone.store import mongodb_store
-from keystone.util.config import Config
-from keystone.util.store_util import init_stores
+from keystone_scim.store.memory_store import MemoryStore
+from keystone_scim.store.postgresql_store import PostgresqlStore, set_up_schema
+from keystone_scim.store import mongodb_store
+from keystone_scim.util.config import Config
+from keystone_scim.util.store_util import init_stores
 
 
 def gen_random_hex(length: int = 24):
@@ -146,9 +146,9 @@ def memory_store():
 
 @pytest.fixture
 def scim_api(aiohttp_client, event_loop, cfg):
-    from keystone.rest import get_error_handling_mw
-    from keystone.rest.group import get_group_routes
-    from keystone.rest.user import get_user_routes
+    from keystone_scim.rest import get_error_handling_mw
+    from keystone_scim.rest.group import get_group_routes
+    from keystone_scim.rest.user import get_user_routes
     scim_api = web.Application()
     scim_api.add_routes(get_user_routes(MemoryStore("User")))
     scim_api.add_routes(get_group_routes(MemoryStore(

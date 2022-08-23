@@ -7,9 +7,9 @@ from azure.identity import AzureCliCredential, DefaultAzureCredential
 from azure.identity.aio import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient, KeyVaultSecret
 
-from keystone.util import ThreadSafeSingleton
-from keystone.util.config import Config
-from keystone.util.exc import UnauthorizedRequest
+from keystone_scim.util import ThreadSafeSingleton
+from keystone_scim.util.config import Config
+from keystone_scim.util.exc import UnauthorizedRequest
 
 from aiohttp import web
 

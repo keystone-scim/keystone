@@ -2,10 +2,10 @@
 import logging
 import os
 
-from keystone import VERSION, LOGO, InterceptHandler
-from keystone.store.mongodb_store import set_up
-from keystone.store.postgresql_store import set_up_schema
-from keystone.util.logger import get_log_handler
+from keystone_scim import VERSION, LOGO, InterceptHandler
+from keystone_scim.store.mongodb_store import set_up
+from keystone_scim.store.postgresql_store import set_up_schema
+from keystone_scim.util.logger import get_log_handler
 
 # Initialize logger prior to loading any other modules:
 
@@ -17,8 +17,8 @@ else:
     logger.handlers = [InterceptHandler()]
 
 # Initialize config and store singletons:
-from keystone.util.config import Config
-from keystone.util.store_util import init_stores
+from keystone_scim.util.config import Config
+from keystone_scim.util.store_util import init_stores
 CONFIG = Config()
 stores = init_stores()
 
@@ -26,10 +26,10 @@ import asyncio
 from aiohttp import web
 from aiohttp_apispec import AiohttpApiSpec
 
-from keystone.rest import get_error_handling_mw
-from keystone.rest.user import get_user_routes
-from keystone.rest.group import get_group_routes
-from keystone.security.authn import bearer_token_check
+from keystone_scim.rest import get_error_handling_mw
+from keystone_scim.rest.user import get_user_routes
+from keystone_scim.rest.group import get_group_routes
+from keystone_scim.security.authn import bearer_token_check
 
 
 async def health(_: web.Request):

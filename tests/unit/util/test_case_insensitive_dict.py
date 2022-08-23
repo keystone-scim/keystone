@@ -1,6 +1,6 @@
 import pytest
 
-from keystone.util.case_insensitive_dict import CaseInsensitiveDict
+from keystone_scim.util.case_insensitive_dict import CaseInsensitiveDict
 
 
 class TestCaseInsensitiveDict:

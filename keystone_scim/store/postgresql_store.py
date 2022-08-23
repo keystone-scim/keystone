@@ -14,12 +14,12 @@ from sqlalchemy import delete, insert, select, text, update, and_
 from sqlalchemy.sql.base import ImmutableColumnCollection
 from sqlalchemy.sql.elements import TextClause
 
-from keystone.models.user import DEFAULT_USER_SCHEMA
-from keystone.store import RDBMSStore
-from keystone.store.pg_sql_queries import ddl_queries
-from keystone.store import pg_models as tbl
-from keystone.util.config import Config
-from keystone.util.exc import ResourceNotFound
+from keystone_scim.models.user import DEFAULT_USER_SCHEMA
+from keystone_scim.store import RDBMSStore
+from keystone_scim.store.pg_sql_queries import ddl_queries
+from keystone_scim.store import pg_models as tbl
+from keystone_scim.util.config import Config
+from keystone_scim.util.exc import ResourceNotFound
 
 CONFIG = Config()
 LOGGER = logging.getLogger(__name__)

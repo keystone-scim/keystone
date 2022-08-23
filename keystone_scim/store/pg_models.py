@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 
-from keystone.util.config import Config
+from keystone_scim.util.config import Config
 
 metadata = sa.MetaData()
 

@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema, validate
 
-from keystone.models import BaseResource, DEFAULT_PATCH_OP_SCHEMA, ListResponse
+from keystone_scim.models import BaseResource, DEFAULT_PATCH_OP_SCHEMA, ListResponse
 
 DEFAULT_GROUP_SCHEMA = "urn:ietf:params:scim:schemas:core:2.0:Group"
 

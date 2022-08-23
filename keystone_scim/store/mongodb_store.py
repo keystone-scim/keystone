@@ -10,9 +10,9 @@ from scim2_filter_parser.ast import LogExpr, Filter, AttrExpr, CompValue, AttrPa
 from scim2_filter_parser.lexer import SCIMLexer
 from scim2_filter_parser.parser import SCIMParser
 
-from keystone.store import DocumentStore
-from keystone.util.config import Config
-from keystone.util.exc import ResourceNotFound
+from keystone_scim.store import DocumentStore
+from keystone_scim.util.config import Config
+from keystone_scim.util.exc import ResourceNotFound
 
 CONFIG = Config()
 

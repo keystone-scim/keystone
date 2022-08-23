@@ -8,9 +8,9 @@ from scim2_filter_parser.ast import LogExpr, Filter, AttrExpr, CompValue, AttrPa
 from scim2_filter_parser.parser import SCIMParser
 from scim2_filter_parser.lexer import SCIMLexer
 
-from keystone.store import BaseStore
-from keystone.util.case_insensitive_dict import CaseInsensitiveDict
-from keystone.util.exc import ResourceNotFound, ResourceAlreadyExists
+from keystone_scim.store import BaseStore
+from keystone_scim.util.case_insensitive_dict import CaseInsensitiveDict
+from keystone_scim.util.exc import ResourceNotFound, ResourceAlreadyExists
 
 
 def _norm_lst(lst: List, attr: str = "value") -> List:

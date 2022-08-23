@@ -6,7 +6,7 @@ authors = ["Yuval Herziger <yherziger@microsoft.com>"]
 license = "MIT"
 
 [tool.poetry.scripts]
-keystone = "keystone.cmd:run"
+keystone-scim = "keystone_scim.cmd:run"
 
 [tool.poetry.dependencies]
 python = "^3.9"

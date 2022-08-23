@@ -7,10 +7,10 @@ from aiohttp import web
 from aiohttp.test_utils import BaseTestServer, TestServer, TestClient
 from aiohttp.web_app import Application
 
-from keystone.store import postgresql_store
-from keystone.store import mongodb_store
-from keystone.util.config import Config
-from keystone.util.store_util import init_stores
+from keystone_scim.store import postgresql_store
+from keystone_scim.store import mongodb_store
+from keystone_scim.util.config import Config
+from keystone_scim.util.store_util import init_stores
 
 
 def gen_random_hex(length: int = 24):
@@ -107,9 +107,9 @@ def module_scoped_aiohttp_client(module_scoped_event_loop):
 
 @pytest.fixture(scope="module")
 def scim_api(module_scoped_aiohttp_client, module_scoped_event_loop, cfg, initial_user, headers):
-    from keystone.rest import get_error_handling_mw
-    from keystone.rest.group import get_group_routes
-    from keystone.rest.user import get_user_routes
+    from keystone_scim.rest import get_error_handling_mw
+    from keystone_scim.rest.group import get_group_routes
+    from keystone_scim.rest.user import get_user_routes
 
     scim_api = web.Application()
     scim_api.add_routes(get_user_routes())

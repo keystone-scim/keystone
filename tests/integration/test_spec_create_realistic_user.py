@@ -3,8 +3,8 @@ import pytest
 from jsonpath_ng import jsonpath, parse
 import pytest_check as check
 
-from keystone.models import DEFAULT_LIST_SCHEMA
-from keystone.models.user import DEFAULT_USER_SCHEMA
+from keystone_scim.models import DEFAULT_LIST_SCHEMA
+from keystone_scim.models.user import DEFAULT_USER_SCHEMA
 
 
 class TestSpecCreateRealisticUser:
