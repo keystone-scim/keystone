@@ -13,6 +13,9 @@
     <a href="https://github.com/keystone-scim/keystone/actions/workflows/integration_tests.yaml">
         <img src="https://img.shields.io/github/workflow/status/keystone-scim/keystone/Integration%20Tests?label=Integration&logo=pytest&logoColor=white&style=flat-square" alt="Integration Tests" />
     </a>
+    <a href="https://github.com/keystone-scim/keystone/actions/workflows/security_tests.yaml">
+        <img src="https://img.shields.io/github/workflow/status/keystone-scim/keystone/Security%20Tests?label=Security Tests&logo=pytest&logoColor=white&style=flat-square" alt="Integration Tests" />
+    </a>
     <a href="./LICENSE">
         <img src="https://img.shields.io/github/license/keystone-scim/keystone?label=License&style=flat-square" alt="License" />
     </a>
