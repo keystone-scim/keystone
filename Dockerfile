@@ -57,7 +57,7 @@ WORKDIR $PYSETUP_PATH
 COPY --from=build $POETRY_HOME $POETRY_HOME
 COPY --from=build $PYSETUP_PATH $PYSETUP_PATH
 
-COPY ./keystone /$PYSETUP_PATH/keystone
+COPY ./keystone_scim /$PYSETUP_PATH/keystone_scim
 
 EXPOSE 5001
-CMD ["poetry", "run", "keystone"]
+CMD ["poetry", "run", "keystone-scim"]

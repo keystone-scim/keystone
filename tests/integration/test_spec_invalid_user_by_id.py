@@ -3,7 +3,7 @@ import pytest
 from jsonpath_ng import parse
 import pytest_check as check
 
-from keystone.models import DEFAULT_ERROR_SCHEMA
+from keystone_scim.models import DEFAULT_ERROR_SCHEMA
 
 
 class TestSpecInvalidUserById:

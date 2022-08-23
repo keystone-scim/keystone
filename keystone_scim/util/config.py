@@ -1,7 +1,7 @@
 import logging
 import os
 
-from keystone.util import ThreadSafeSingleton
+from keystone_scim.util import ThreadSafeSingleton
 
 from schema import Optional, Schema
 import yaml

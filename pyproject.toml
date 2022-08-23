@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "keystone"
+name = "keystone-scim"
 version = "0.1.0"
-description = "A SCIM 2.0 Provisioning API for Azure AD Tenants"
+description = "A SCIM 2.0 Provisioning API"
 authors = ["Yuval Herziger <yherziger@microsoft.com>"]
 license = "MIT"
 
 [tool.poetry.scripts]
-keystone = "keystone.cmd:run"
+keystone-scim = "keystone_scim.cmd:run"
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -29,16 +29,17 @@ SQLAlchemy = "^1.4.39"
 
 
 [tool.poetry.dev-dependencies]
+black = "^22.3.0"
+bandit = "^1.7.4"
 jsonpath-ng = "^1.5.3"
+names = "^0.3.0"
 pytest = "^7.1.2"
 pytest-aiohttp = "^1.0.4"
 pytest-asyncio = "^0.18.3"
 pytest-cov = "^3.0.0"
 pytest_check = "^1.0.5"
 pytest-ordering = "^0.6"
-black = "^22.3.0"
-bandit = "^1.7.4"
-names = "^0.3.0"
+safety = "^2.1.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

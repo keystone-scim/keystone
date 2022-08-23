@@ -5,8 +5,8 @@ from typing import Dict
 import pytest
 from scim2_filter_parser.parser import SCIMParserError
 
-from keystone.util.case_insensitive_dict import CaseInsensitiveDict
-from keystone.util.exc import ResourceNotFound, ResourceAlreadyExists
+from keystone_scim.util.case_insensitive_dict import CaseInsensitiveDict
+from keystone_scim.util.exc import ResourceNotFound, ResourceAlreadyExists
 
 
 class TestMemoryStore:

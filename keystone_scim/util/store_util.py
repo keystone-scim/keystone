@@ -1,13 +1,13 @@
 import logging
 from typing import Dict
 
-from keystone.store import BaseStore
-from keystone.store.memory_store import MemoryStore
-from keystone.store.cosmos_db_store import CosmosDbStore
-from keystone.store.mongodb_store import MongoDbStore
-from keystone.store.postgresql_store import PostgresqlStore
-from keystone.util import ThreadSafeSingleton
-from keystone.util.config import Config
+from keystone_scim.store import BaseStore
+from keystone_scim.store.memory_store import MemoryStore
+from keystone_scim.store.cosmos_db_store import CosmosDbStore
+from keystone_scim.store.mongodb_store import MongoDbStore
+from keystone_scim.store.postgresql_store import PostgresqlStore
+from keystone_scim.util import ThreadSafeSingleton
+from keystone_scim.util.config import Config
 
 
 CONFIG = Config()

@@ -2,25 +2,23 @@
 import logging
 import os
 
-from keystone import VERSION, LOGO, InterceptHandler
-from keystone.store.mongodb_store import set_up
-from keystone.store.postgresql_store import set_up_schema
-from keystone.util.logger import get_log_handler
+from keystone_scim import VERSION, LOGO, InterceptHandler
+from keystone_scim.store.mongodb_store import set_up
+from keystone_scim.store.postgresql_store import set_up_schema
+from keystone_scim.util.logger import get_log_handler
 
 # Initialize logger prior to loading any other modules:
 
+logger = logging.getLogger()
+logger.propagate = True
 if int(os.environ.get("JSON_LOGS", "0")) == 1:
-    logger = logging.getLogger()
-    logger.propagate = True
     logger.handlers = [get_log_handler()]
 else:
-    logger = logging.getLogger()
-    logger.propagate = True
     logger.handlers = [InterceptHandler()]
 
 # Initialize config and store singletons:
-from keystone.util.config import Config
-from keystone.util.store_util import init_stores
+from keystone_scim.util.config import Config
+from keystone_scim.util.store_util import init_stores
 CONFIG = Config()
 stores = init_stores()
 
@@ -28,10 +26,10 @@ import asyncio
 from aiohttp import web
 from aiohttp_apispec import AiohttpApiSpec
 
-from keystone.rest import get_error_handling_mw
-from keystone.rest.user import get_user_routes
-from keystone.rest.group import get_group_routes
-from keystone.security.authn import bearer_token_check
+from keystone_scim.rest import get_error_handling_mw
+from keystone_scim.rest.user import get_user_routes
+from keystone_scim.rest.group import get_group_routes
+from keystone_scim.security.authn import bearer_token_check
 
 
 async def health(_: web.Request):
@@ -46,7 +44,7 @@ async def print_logo(_logger):
     return [_logger.info(f" {ln}") for ln in LOGO.split("\n")]
 
 
-async def serve(host: str = "0.0.0.0", port: int = 5001):
+async def serve(port: int = 5001):
     if CONFIG.get("store.pg.host") is not None:
         set_up_schema()
     elif CONFIG.get("store.mongo.host") or CONFIG.get("store.mongo.dsn"):
@@ -78,10 +76,10 @@ async def serve(host: str = "0.0.0.0", port: int = 5001):
 
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, host=host, port=port)
+    site = web.TCPSite(runner, port=port)
     await print_logo(logger)
     logger.info(
-        "Keystone server listening on http://%s:%d, log level: %s", host, port, os.getenv("LOG_LEVEL", "INFO").upper()
+        "Keystone server listening on port %d, log level: %s", port, os.getenv("LOG_LEVEL", "INFO").upper()
     )
     await site.start()
 
