@@ -9,13 +9,11 @@ from keystone.util.logger import get_log_handler
 
 # Initialize logger prior to loading any other modules:
 
+logger = logging.getLogger()
+logger.propagate = True
 if int(os.environ.get("JSON_LOGS", "0")) == 1:
-    logger = logging.getLogger()
-    logger.propagate = True
     logger.handlers = [get_log_handler()]
 else:
-    logger = logging.getLogger()
-    logger.propagate = True
     logger.handlers = [InterceptHandler()]
 
 # Initialize config and store singletons:
@@ -46,7 +44,7 @@ async def print_logo(_logger):
     return [_logger.info(f" {ln}") for ln in LOGO.split("\n")]
 
 
-async def serve(host: str = "0.0.0.0", port: int = 5001):
+async def serve(port: int = 5001):
     if CONFIG.get("store.pg.host") is not None:
         set_up_schema()
     elif CONFIG.get("store.mongo.host") or CONFIG.get("store.mongo.dsn"):
@@ -78,10 +76,10 @@ async def serve(host: str = "0.0.0.0", port: int = 5001):
 
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, host=host, port=port)
+    site = web.TCPSite(runner, port=port)
     await print_logo(logger)
     logger.info(
-        "Keystone server listening on http://%s:%d, log level: %s", host, port, os.getenv("LOG_LEVEL", "INFO").upper()
+        "Keystone server listening on port %d, log level: %s", port, os.getenv("LOG_LEVEL", "INFO").upper()
     )
     await site.start()
 

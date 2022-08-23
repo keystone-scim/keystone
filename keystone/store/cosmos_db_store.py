@@ -104,7 +104,6 @@ class CosmosDbStore(BaseStore):
             raise
 
     async def search(self, _filter: str, start_index: int = 1, count: int = 100) -> tuple[list[Dict], int]:
-        pagination = "OFFSET @offset LIMIT @limit"
         params = [
             {"name": "@offset", "value": start_index - 1},
             {"name": "@limit", "value": count},
@@ -123,7 +122,9 @@ class CosmosDbStore(BaseStore):
             where = re.sub(replace_re, r"\1 STRINGEQUALS(\2, \3, true) \4", where)
             where = f"where {where}"
 
-        query = f"SELECT * FROM c {where} {pagination}"
+        # Ignoring bandit SQL injection detection because a safe parameter interpolation
+        # takes place by Cosmos DB.
+        query = f"SELECT * FROM c {where} OFFSET @offset LIMIT @limit"  # nosec B608
         client_creds = await get_client_credentials()
         uri = self.account_uri
         resources = []
@@ -136,8 +137,11 @@ class CosmosDbStore(BaseStore):
                     resources.append(await remove_cosmos_metadata(resource))
             except exceptions.CosmosHttpResponseError:
                 raise
+
+        # Ignoring bandit SQL injection detection because a safe parameter interpolation
+        # takes place by Cosmos DB.
         count = await self._get_query_count(
-            f"SELECT VALUE COUNT(c.id) FROM c {where}",
+            f"SELECT VALUE COUNT(c.id) FROM c {where}",  # nosec B608
             params
         )
         return resources, count
@@ -165,9 +169,12 @@ class CosmosDbStore(BaseStore):
             database = client.get_database_client(CONFIG.get("store.cosmos.db_name"))
             container = database.get_container_client(self.container_name)
             resource_id = resource.get(self.key_attr) or str(uuid.uuid4())
+            if self.entity_name == "users":
+                query = "SELECT * FROM c WHERE c.id = @id OR c.userName = @uniqueAttrValue"
+            else:
+                query = "SELECT * FROM c WHERE c.id = @id OR c.displayName = @uniqueAttrValue"
+
             try:
-                query = f"SELECT * FROM c " \
-                        f"WHERE c.id = @id OR c.{self.unique_attribute} = @uniqueAttrValue"
                 params = [
                     {"name": "@id", "value": resource_id},
                     {"name": "@uniqueAttrValue", "value": resource.get(self.unique_attribute)},
