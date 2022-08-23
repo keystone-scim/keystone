@@ -23,7 +23,7 @@ jobs:
         run: poetry install
       - name: Static Code Analysis
         run: |
-          poetry run bandit -r ./keystone
+          poetry run bandit -r ./keystone_scim
       - name: Dependency Vulnerability Analysis
         run: |
           poetry run safety check
