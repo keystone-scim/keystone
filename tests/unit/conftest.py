@@ -47,7 +47,7 @@ def rdbms_stores(event_loop, request):
             user="root",
             password="supersecret",
             ssl="disabled",
-            database="scim2",
+            database="mysql",
         )
         mysql_store.set_up_schema(**conn_args)
         user_store = mysql_store.MySqlStore("users", **conn_args)
