@@ -4,11 +4,12 @@ import os
 
 from keystone_scim import VERSION, LOGO, InterceptHandler
 from keystone_scim.store.mongodb_store import set_up
-from keystone_scim.store.postgresql_store import set_up_schema
+from keystone_scim.store import postgresql_store
+from keystone_scim.store import mysql_store
 from keystone_scim.util.logger import get_log_handler
 
-# Initialize logger prior to loading any other modules:
 
+# Initialize logger prior to loading any other 3rd party modules:
 logger = logging.getLogger()
 logger.propagate = True
 if int(os.environ.get("JSON_LOGS", "0")) == 1:
@@ -46,7 +47,9 @@ async def print_logo(_logger):
 
 async def serve(port: int = 5001):
     if CONFIG.get("store.pg.host") is not None:
-        set_up_schema()
+        postgresql_store.set_up_schema()
+    elif CONFIG.get("store.mysql.host") is not None:
+        mysql_store.set_up_schema()
     elif CONFIG.get("store.mongo.host") or CONFIG.get("store.mongo.dsn"):
         await set_up()
 

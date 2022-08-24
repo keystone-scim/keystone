@@ -28,6 +28,15 @@ SCHEMA = Schema({
             Optional("database", default="postgres"): str,
             Optional("schema", default="public"): str,
         }),
+        Optional("mysql", default=None): Schema({
+            Optional("host"): str,
+            Optional("port", default=5432): int,
+            Optional("ssl", default="require"): str,
+            Optional("user"): str,
+            Optional("password"): str,
+            Optional("database", default="scim2"): str,
+            Optional("schema", default="public"): str,
+        }),
         Optional("mongo", default=None): Schema({
             Optional("host"): str,
             Optional("port", default=27017): int,

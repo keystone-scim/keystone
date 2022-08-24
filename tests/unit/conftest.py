@@ -6,7 +6,8 @@ import pytest
 from aiohttp import web
 
 from keystone_scim.store.memory_store import MemoryStore
-from keystone_scim.store.postgresql_store import PostgresqlStore, set_up_schema
+from keystone_scim.store import postgresql_store
+from keystone_scim.store import mysql_store
 from keystone_scim.store import mongodb_store
 from keystone_scim.util.config import Config
 from keystone_scim.util.store_util import init_stores
@@ -22,18 +23,35 @@ def rand_id():
 
 
 @pytest.fixture
-def postgresql_stores(event_loop):
-    conn_args = dict(
-        host="localhost",
-        port=5432,
-        username="postgres",
-        password="postgres",
-        ssl_mode="disable",
-        database="postgres",
-    )
-    set_up_schema(**conn_args)
-    user_store = PostgresqlStore("users", **conn_args)
-    group_store = PostgresqlStore("groups", **conn_args)
+def rdbms_stores(event_loop, request):
+    user_store, group_store = None, None
+    if request.param == "postgresql":
+        conn_args = dict(
+            host="localhost",
+            port=5432,
+            username="postgres",
+            password="postgres",
+            ssl_mode="disable",
+            database="postgres",
+        )
+        postgresql_store.set_up_schema(**conn_args)
+        user_store = postgresql_store.PostgresqlStore("users", **conn_args)
+        group_store = postgresql_store.PostgresqlStore("groups", **conn_args)
+    elif request.param == "mysql":
+        # The MySQL unit test logs will be polluted with warnings even though the
+        # test will pass, because of this aiomysql bug:
+        # https://github.com/aio-libs/aiomysql/issues/539
+        conn_args = dict(
+            host="localhost",
+            port=3306,
+            user="root",
+            password="supersecret",
+            ssl="disabled",
+            database="mysql",
+        )
+        mysql_store.set_up_schema(**conn_args)
+        user_store = mysql_store.MySqlStore("users", **conn_args)
+        group_store = mysql_store.MySqlStore("groups", **conn_args)
     yield user_store, group_store
     event_loop.run_until_complete(user_store.clean_up_store())
     event_loop.run_until_complete(user_store.term_connection())

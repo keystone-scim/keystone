@@ -50,7 +50,7 @@ its different backends.
 **Keystone** implements the SCIM 2.0 REST API.  If you run your identity management
 operations with an identity manager that supports user provisioning (e.g., Azure AD, Okta, etc.),
 you can use **Keystone** to persist directory changes. Keystone v0.1.0 supports two
-persistence layers: PostgreSQL and Azure Cosmos DB.
+persistence layers: PostgreSQL, MongoDB, Azure Cosmos DB, and MySQL.
 
 <div align="center">
     <img src="./logo/how-it-works.png" alt="logo" />
@@ -66,8 +66,9 @@ Key features:
   * [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction)
   * [PostgreSQL](https://www.postgresql.org) (version 10 or higher)
   * [MongoDB](https://www.mongodb.com/docs/) (version 3.6 or higher)
+  * [MySQL](https://www.mongodb.com/docs/) (version 5.7.8 or higher)
 * Azure Key Vault bearer token retrieval.
-* Extensible store: Can't use MongoDB, Cosmos DB, or PostgreSQL?  Open an issue and/or consider
+* Extensible store: Can't use MongoDB, Cosmos DB, PostgreSQL, or MySQL?  Open an issue and/or consider
   [becoming a contributor](./CONTRIBUTING.md) by implementing your own data store.
 
 ## Configure the API

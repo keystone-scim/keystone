@@ -4,16 +4,18 @@ from random import choice
 import asyncio
 import pytest
 from psycopg2.errors import UniqueViolation
+from pymysql.err import IntegrityError
 
 from keystone_scim.util.exc import ResourceNotFound
 
 
-class TestPostgreSQLStore:
+class TestRdbmsStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_get_user_by_id_fails_for_nonexistent_user(postgresql_stores):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_get_user_by_id_fails_for_nonexistent_user(rdbms_stores):
+        user_store, _ = rdbms_stores
         exc_thrown = False
         try:
             _ = await user_store.get_by_id(str(uuid.uuid4()))
@@ -23,8 +25,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_delete_user_by_id_fails_for_nonexistent_user(postgresql_stores):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_delete_user_by_id_fails_for_nonexistent_user(rdbms_stores):
+        user_store, _ = rdbms_stores
         exc_thrown = False
         try:
             _ = await user_store.delete(str(uuid.uuid4()))
@@ -34,8 +37,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_create_user_success(postgresql_stores, single_user):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_create_user_success(rdbms_stores, single_user):
+        user_store, _ = rdbms_stores
         returned_user = await user_store.create(single_user)
         user_id = returned_user.get("id")
         looked_up_user = await user_store.get_by_id(user_id)
@@ -44,22 +48,24 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_create_user_fails_on_duplicate_username(postgresql_stores, single_user):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_create_user_fails_on_duplicate_username(rdbms_stores, single_user):
+        user_store, _ = rdbms_stores
         _ = await user_store.create(single_user)
         duplicate_user = {**single_user}
         del duplicate_user["id"]
         exc_thrown = False
         try:
             _ = await user_store.create(duplicate_user)
-        except UniqueViolation:
+        except (UniqueViolation, IntegrityError):
             exc_thrown = True
         assert exc_thrown
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_delete_user_success(postgresql_stores, single_user):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_delete_user_success(rdbms_stores, single_user):
+        user_store, _ = rdbms_stores
         user = await user_store.create(single_user)
         user_id = user.get("id")
         _ = await user_store.delete(user_id)
@@ -72,21 +78,23 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_create_user_fails_on_duplicate_id(postgresql_stores, users):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_create_user_fails_on_duplicate_id(rdbms_stores, users):
+        user_store, _ = rdbms_stores
         returned_user = await user_store.create(users[0])
         duplicate_user = {**users[1], "id": returned_user.get("id")}
         exc_thrown = False
         try:
             _ = await user_store.create(duplicate_user)
-        except UniqueViolation:
+        except (UniqueViolation, IntegrityError):
             exc_thrown = True
         assert exc_thrown
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_search_user_by_username(postgresql_stores, single_user):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_search_user_by_username(rdbms_stores, single_user):
+        user_store, _ = rdbms_stores
         username = single_user.get("userName")
         _ = await user_store.create(single_user)
         _filter = f"userName Eq \"{username}\""
@@ -102,8 +110,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_search_user_by_id(postgresql_stores, single_user):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_search_user_by_id(rdbms_stores, single_user):
+        user_store, _ = rdbms_stores
         user_id = single_user.get("id")
         _ = await user_store.create(single_user)
         _filter = f"id Eq \"{user_id}\""
@@ -113,8 +122,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_search_user_by_email(postgresql_stores, single_user):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_search_user_by_email(rdbms_stores, single_user):
+        user_store, _ = rdbms_stores
         email = single_user.get("userName")
         _ = await user_store.create(single_user)
         _filter = f"emails.value Eq \"{email}\""
@@ -135,8 +145,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_search_user_pagination(postgresql_stores, users):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_search_user_pagination(rdbms_stores, users):
+        user_store, _ = rdbms_stores
         _ = await asyncio.gather(*[user_store.create(u) for u in users])
         email = users[0].get("userName")
         email_domain = email.split("@")[1]
@@ -151,8 +162,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_update_user_success(postgresql_stores, single_user):
-        user_store, _ = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_update_user_success(rdbms_stores, single_user):
+        user_store, _ = rdbms_stores
         res = await user_store.create(single_user)
         user_id = res.get("id")
         update_attr = {
@@ -180,8 +192,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_create_group_success(postgresql_stores, single_group):
-        _, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_create_group_success(rdbms_stores, single_group):
+        _, group_store = rdbms_stores
         res = await group_store.create(single_group)
         group_id = res.get("id")
 
@@ -191,8 +204,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_create_group_with_members_success(postgresql_stores, single_group, users):
-        user_store, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_create_group_with_members_success(rdbms_stores, single_group, users):
+        user_store, group_store = rdbms_stores
         user_res = await asyncio.gather(*[user_store.create(u) for u in users])
         group_payload = {**single_group, "members": [{
             "value": u.get("id"),
@@ -205,8 +219,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_get_group_by_id_fails_for_nonexistent_group(postgresql_stores):
-        _, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_get_group_by_id_fails_for_nonexistent_group(rdbms_stores):
+        _, group_store = rdbms_stores
         exc_thrown = False
         try:
             _ = await group_store.get_by_id(str(uuid.uuid4()))
@@ -216,8 +231,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_update_group_metadata_success(postgresql_stores, single_group):
-        _, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_update_group_metadata_success(rdbms_stores, single_group):
+        _, group_store = rdbms_stores
         res = await group_store.create(single_group)
         group_id = res.get("id")
         update_attr = {
@@ -229,8 +245,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_delete_group_success(postgresql_stores, single_group):
-        _, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_delete_group_success(rdbms_stores, single_group):
+        _, group_store = rdbms_stores
         group = await group_store.create(single_group)
         group_id = group.get("id")
         _ = await group_store.delete(group_id)
@@ -243,8 +260,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_delete_group_fails_for_nonexistent_group(postgresql_stores):
-        _, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_delete_group_fails_for_nonexistent_group(rdbms_stores):
+        _, group_store = rdbms_stores
         exc_thrown = False
         try:
             _ = await group_store.delete(str(uuid.uuid4()))
@@ -254,8 +272,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_add_users_to_group(postgresql_stores, single_group, users):
-        user_store, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_add_users_to_group(rdbms_stores, single_group, users):
+        user_store, group_store = rdbms_stores
         _ = await asyncio.gather(*[user_store.create(u) for u in users])
         res = await group_store.create(single_group)
         group_id = res.get("id")
@@ -265,8 +284,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_remove_users_from_group(postgresql_stores, single_group, users):
-        user_store, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_remove_users_from_group(rdbms_stores, single_group, users):
+        user_store, group_store = rdbms_stores
         _ = await asyncio.gather(*[user_store.create(u) for u in users])
         res = await group_store.create(single_group)
         group_id = res.get("id")
@@ -286,8 +306,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_set_group_members(postgresql_stores, single_group, users):
-        user_store, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_set_group_members(rdbms_stores, single_group, users):
+        user_store, group_store = rdbms_stores
         cohort_1 = users[:2]
         cohort_2 = users[2:len(users)]
         _ = await asyncio.gather(*[user_store.create(u) for u in users])
@@ -305,8 +326,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_search_group_members(postgresql_stores, single_group, users):
-        user_store, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_search_group_members(rdbms_stores, single_group, users):
+        user_store, group_store = rdbms_stores
         _ = await asyncio.gather(*[user_store.create(u) for u in users])
         res = await group_store.create(single_group)
         first_user_id = users[0].get("id")
@@ -324,8 +346,9 @@ class TestPostgreSQLStore:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_search_groups(postgresql_stores, groups):
-        _, group_store = postgresql_stores
+    @pytest.mark.parametrize("rdbms_stores", ["postgresql", "mysql"], indirect=["rdbms_stores"])
+    async def test_search_groups(rdbms_stores, groups):
+        _, group_store = rdbms_stores
         _ = await asyncio.gather(*[group_store.create(g) for g in groups])
         _filter = f"displayName Eq \"Human Resources\""
         res, count = await group_store.search(_filter)
