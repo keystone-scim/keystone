@@ -10,7 +10,7 @@ import psycopg2
 from aiopg.sa import create_engine
 from aiopg.sa.result import RowProxy
 from scim2_filter_parser.queries import SQLQuery
-from sqlalchemy import delete, insert, select, text, update, and_
+from sqlalchemy import delete, insert, select, text, update, and_, or_
 from sqlalchemy.sql.base import ImmutableColumnCollection
 from sqlalchemy.sql.elements import TextClause
 
@@ -402,9 +402,14 @@ class PostgresqlStore(RDBMSStore):
         return {}
 
     async def remove_users_from_group(self, user_ids: List[str], group_id: str):
-        user_ids_s = ",".join([f"'{uid}'" for uid in user_ids])
+        user_id_conditions = []
+        for user_id in user_ids:
+            user_id_conditions.append(tbl.users_groups.c.userId == user_id)
         q = delete(tbl.users_groups).where(
-            text(f"users_groups.\"groupId\" = '{group_id}' AND users_groups.\"userId\" IN ({user_ids_s})")
+            and_(
+                tbl.users_groups.c.groupId == group_id,
+                or_(*user_id_conditions)
+            )
         )
         engine = await self.get_engine()
         async with engine.acquire() as conn:
@@ -438,14 +443,16 @@ class PostgresqlStore(RDBMSStore):
         parsed_q = SQLQuery(_filter, "users_groups", self.user_attr_map)
         where = parsed_q.where_sql
         parsed_params = parsed_q.params_dict
+        sqla_params = {}
         for k in parsed_params.keys():
-            where = where.replace(f"{{{k}}}", f"'{parsed_params[k]}'")
+            sqla_params[f"param_{k}"] = parsed_params[k]
+            where = where.replace(f"{{{k}}}", f":param_{k}")
         q = select([tbl.users_groups]).join(tbl.users, tbl.users.c.id == tbl.users_groups.c.userId). \
             where(and_(tbl.users_groups.c.groupId == group_id, text(where)))
         engine = await self.get_engine()
         async with engine.acquire() as conn:
             res = []
-            async for row in await conn.execute(q):
+            async for row in await conn.execute(q, **sqla_params):
                 res.append({"value": row.userId})
         return res
 
